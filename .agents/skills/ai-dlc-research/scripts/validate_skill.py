@@ -6,15 +6,71 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[4]
-SKILL = ROOT / ".agents/skills/ai-dlc-research/SKILL.md"
+SKILL_DIR = ROOT / ".agents/skills/ai-dlc-research"
+SKILL = SKILL_DIR / "SKILL.md"
 REQUIRED = [
     ROOT / "AGENTS.md",
     ROOT / ".github/copilot-instructions.md",
     ROOT / "research/research-policy.md",
     ROOT / "research/reading-log.md",
     SKILL,
+    SKILL_DIR / "references/output-templates.md",
+    SKILL_DIR / "references/search-strategy.md",
+    SKILL_DIR / "references/source-quality.md",
+    SKILL_DIR / "scripts/reading_log.py",
 ]
+ALLOWED_FRONTMATTER = {"name", "description", "license", "allowed-tools", "metadata"}
+REQUIRED_REFERENCES = (
+    "research/research-policy.md",
+    "research/reading-log.md",
+    "references/output-templates.md",
+    "references/search-strategy.md",
+)
+
+
+def validate_skill_text(text: str) -> list[str]:
+    errors: list[str] = []
+    match = re.match(r"\A---\r?\n(.*?)\r?\n---(?:\r?\n|\Z)", text, re.S)
+    if not match:
+        return ["SKILL.md must contain closed YAML frontmatter at the start."]
+
+    try:
+        frontmatter = yaml.safe_load(match.group(1))
+    except yaml.YAMLError as exc:
+        return [f"SKILL.md frontmatter is invalid YAML: {exc}"]
+
+    if not isinstance(frontmatter, dict):
+        return ["SKILL.md frontmatter must be a YAML mapping."]
+
+    unexpected = set(frontmatter) - ALLOWED_FRONTMATTER
+    if unexpected:
+        errors.append(
+            "SKILL.md frontmatter has unexpected fields: "
+            + ", ".join(sorted(unexpected))
+        )
+
+    name = frontmatter.get("name")
+    if name != SKILL_DIR.name:
+        errors.append(
+            f"SKILL.md name must match its directory: expected {SKILL_DIR.name!r}."
+        )
+
+    description = frontmatter.get("description")
+    if not isinstance(description, str) or len(description.strip()) < 40:
+        errors.append("SKILL.md description is missing or too vague.")
+    elif len(description) > 1024:
+        errors.append("SKILL.md description exceeds 1024 characters.")
+    elif "<" in description or ">" in description:
+        errors.append("SKILL.md description cannot contain angle brackets.")
+
+    for required_ref in REQUIRED_REFERENCES:
+        if required_ref not in text:
+            errors.append(f"SKILL.md must reference {required_ref}.")
+
+    return errors
 
 
 def main() -> int:
@@ -25,16 +81,7 @@ def main() -> int:
 
     if SKILL.exists():
         text = SKILL.read_text(encoding="utf-8")
-        if not text.startswith("---\n"):
-            errors.append("SKILL.md must start with YAML frontmatter.")
-        if not re.search(r"^name:\s*ai-dlc-research\s*$", text, re.M):
-            errors.append("SKILL.md has an unexpected or missing name.")
-        match = re.search(r"^description:\s*(.+)$", text, re.M)
-        if not match or len(match.group(1).strip()) < 40:
-            errors.append("SKILL.md description is missing or too vague.")
-        for required_ref in ("research/research-policy.md", "research/reading-log.md"):
-            if required_ref not in text:
-                errors.append(f"SKILL.md must reference {required_ref}.")
+        errors.extend(validate_skill_text(text))
 
     if errors:
         print("INVALID")

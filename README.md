@@ -58,6 +58,8 @@ uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log 
 uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py add --log research/reading-log.md --date "2026-07-26" --status candidate --title "Paper title" --authors "Author A; Author B" --year 2026 --type "査読論文" --venue "ICSE" --topics "agents; evaluation" --score 8 --url "https://doi.org/10.xxxx/xxxxx" --notes "first pass"
 ```
 
+`--status read` で追加する場合は、対象月を正確に判定できるよう `--read-date "YYYY-MM-DD"` も指定してください。
+
 ## 使い方
 
 使い方の詳細（暗黙呼び出し・明示呼び出し・Copilot Appでの利用・動作確認・同梱プロンプト・重複確認手順）は、次を参照してください。

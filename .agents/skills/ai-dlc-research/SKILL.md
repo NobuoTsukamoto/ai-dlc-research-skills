@@ -76,6 +76,13 @@ PDFまたは本文が提供された場合、単なる要約ではなく次を�
 
 数値や図表には、可能な限りページ、表番号、図番号を付ける。記載がないことは「不明」とする。
 
+## monthly-synthesis
+
+1. 対象月を明示する。
+2. `research/reading-log.md` から、ステータスが `read` かつ `読了日` が対象月に含まれる資料だけを選ぶ。
+3. `読了日` が空欄の `read` 資料は統合対象に含めず、不完全な記録として件数を示す。
+4. 個別要約の列挙ではなく、一致する知見、矛盾、証拠の強さ、適用条件を横断して整理する。
+
 ## 採点
 
 合計10点。
@@ -110,6 +117,8 @@ PDFまたは本文が提供された場合、単なる要約ではなく次を�
 ```bash
 python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
 ```
+
+`add` でステータスを `read` にする場合は `--read-date YYYY-MM-DD` を必須とする。
 
 変更前後の差分を確認する。
 

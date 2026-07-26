@@ -8,10 +8,15 @@ import re
 import sys
 import unicodedata
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Iterable
+from urllib.parse import urlsplit, urlunsplit
 
-HEADER_PREFIX = "| 登録日 | ステータス | タイトル |"
+HEADER_PREFIX = "| 登録日 | 読了日 | ステータス | タイトル |"
+DOI_PATTERN = re.compile(r"10\.\d{4,9}/[-._;()/:a-z0-9]+", re.I)
+TITLE_INDEX = 3
+REFERENCE_INDEX = 10
 
 
 def normalize_text(value: str) -> str:
@@ -22,14 +27,50 @@ def normalize_text(value: str) -> str:
 
 
 def normalize_doi(value: str) -> str:
-    value = value.strip()
-    value = re.sub(r"^https?://(dx\.)?doi\.org/", "", value, flags=re.I)
-    value = re.sub(r"^doi\s*:\s*", "", value, flags=re.I)
-    return value.casefold().rstrip(" .")
+    match = DOI_PATTERN.search(unicodedata.normalize("NFKC", value))
+    if not match:
+        return ""
+    doi = match.group(0).casefold().rstrip(".,;")
+    while doi.endswith(")") and doi.count(")") > doi.count("("):
+        doi = doi[:-1]
+    return doi
+
+
+def normalize_reference(value: str) -> str:
+    value = unicodedata.normalize("NFKC", value).strip()
+    doi = normalize_doi(value)
+    if doi:
+        return f"doi:{doi}"
+
+    try:
+        parts = urlsplit(value)
+    except ValueError:
+        return value
+
+    if parts.scheme.casefold() not in {"http", "https"} or not parts.netloc:
+        return value
+
+    return urlunsplit(
+        (
+            parts.scheme.casefold(),
+            parts.netloc.casefold(),
+            parts.path.rstrip("/"),
+            parts.query,
+            "",
+        )
+    )
 
 
 def escape_cell(value: str) -> str:
     return value.replace("\\", "\\\\").replace("|", "\\|").replace("\n", " ").strip()
+
+
+def iso_date(value: str) -> str:
+    try:
+        date.fromisoformat(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("expected YYYY-MM-DD") from exc
+    return value
 
 
 @dataclass
@@ -38,11 +79,13 @@ class Row:
 
     @property
     def title(self) -> str:
-        return self.cells[2] if len(self.cells) > 2 else ""
+        return self.cells[TITLE_INDEX] if len(self.cells) > TITLE_INDEX else ""
 
     @property
     def reference(self) -> str:
-        return self.cells[9] if len(self.cells) > 9 else ""
+        return (
+            self.cells[REFERENCE_INDEX] if len(self.cells) > REFERENCE_INDEX else ""
+        )
 
 
 def parse_table_rows(text: str) -> list[Row]:
@@ -63,14 +106,22 @@ def parse_table_rows(text: str) -> list[Row]:
     return rows
 
 
-def find_duplicates(rows: Iterable[Row], title: str, doi: str) -> list[Row]:
+def find_duplicates(rows: Iterable[Row], title: str, reference: str) -> list[Row]:
     title_key = normalize_text(title)
-    doi_key = normalize_doi(doi) if doi else ""
+    doi_key = normalize_doi(reference)
+    reference_key = normalize_reference(reference) if reference else ""
     matches: list[Row] = []
     for row in rows:
         row_title_key = normalize_text(row.title)
-        row_ref = normalize_doi(row.reference)
-        if doi_key and doi_key in row_ref:
+        row_doi_key = normalize_doi(row.reference)
+        row_reference_key = normalize_reference(row.reference)
+        if doi_key and row_doi_key and doi_key == row_doi_key:
+            matches.append(row)
+        elif (
+            reference_key
+            and row_reference_key
+            and reference_key == row_reference_key
+        ):
             matches.append(row)
         elif title_key and row_title_key == title_key:
             matches.append(row)
@@ -114,6 +165,10 @@ def cmd_check(args: argparse.Namespace) -> int:
 
 
 def cmd_add(args: argparse.Namespace) -> int:
+    if args.status == "read" and not args.read_date:
+        print("--read-date is required when --status is read.", file=sys.stderr)
+        return 2
+
     path = Path(args.log)
     text = path.read_text(encoding="utf-8")
     matches = find_duplicates(parse_table_rows(text), args.title, args.url or "")
@@ -125,6 +180,7 @@ def cmd_add(args: argparse.Namespace) -> int:
 
     values = [
         args.date,
+        args.read_date,
         args.status,
         args.title,
         args.authors,
@@ -154,7 +210,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     add = sub.add_parser("add")
     add.add_argument("--log", required=True)
-    add.add_argument("--date", required=True)
+    add.add_argument("--date", required=True, type=iso_date)
+    add.add_argument("--read-date", default="", type=iso_date)
     add.add_argument(
         "--status",
         required=True,
