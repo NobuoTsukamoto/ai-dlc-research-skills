@@ -16,7 +16,8 @@ AI-DCLのリサーチを行うために、CodexとGitHub Copilot Appの両方で
 ├── research/
 │   ├── research-policy.md
 │   └── reading-log.md
-└── prompts/
+├── prompts/
+└── docs/
 ```
 
 ## 導入
@@ -57,40 +58,11 @@ uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log 
 uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py add --log research/reading-log.md --date "2026-07-26" --status candidate --title "Paper title" --authors "Author A; Author B" --year 2026 --type "査読論文" --venue "ICSE" --topics "agents; evaluation" --score 8 --url "https://doi.org/10.xxxx/xxxxx" --notes "first pass"
 ```
 
-## Codex
+## 使い方
 
-暗黙呼び出し:
+使い方の詳細（暗黙呼び出し・明示呼び出し・Copilot Appでの利用・動作確認・同梱プロンプト・重複確認手順）は、次を参照してください。
 
-```text
-AI駆動開発の最新論文を調査し、今週読む1～2本を選んでください。
-```
-
-明示呼び出し:
-
-- `/skills`から選択
-- または`$ai-dlc-research`を指定
-
-## GitHub Copilot App
-
-通常のプロンプトで対象タスクを依頼すると、スキルの`description`との一致により選択されます。
-
-```text
-このリポジトリのresearch-policy.mdとreading-log.mdに従って、
-AI駆動開発の今週の推薦を作成してください。
-```
-
-## 初期テスト
-
-```text
-スキルを使って設定を確認してください。
-まだWeb検索は行わず、次だけ報告してください。
-
-1. 認識した調査テーマ
-2. 評価基準
-3. 重複判定方法
-4. ログを変更する条件
-5. 週次推薦の出力項目
-```
+- `docs/usage.md`
 
 ## 検証
 
