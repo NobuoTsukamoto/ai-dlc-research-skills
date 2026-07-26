@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-SKILL = ROOT / ".agents/skills/ai-driven-development-research/SKILL.md"
+SKILL = ROOT / ".agents/skills/ai-dlc-research/SKILL.md"
 REQUIRED = [
     ROOT / "AGENTS.md",
     ROOT / ".github/copilot-instructions.md",
@@ -27,7 +27,7 @@ def main() -> int:
         text = SKILL.read_text(encoding="utf-8")
         if not text.startswith("---\n"):
             errors.append("SKILL.md must start with YAML frontmatter.")
-        if not re.search(r"^name:\s*ai-driven-development-research\s*$", text, re.M):
+        if not re.search(r"^name:\s*ai-dlc-research\s*$", text, re.M):
             errors.append("SKILL.md has an unexpected or missing name.")
         match = re.search(r"^description:\s*(.+)$", text, re.M)
         if not match or len(match.group(1).strip()) < 40:

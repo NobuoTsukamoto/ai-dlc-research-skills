@@ -1,6 +1,6 @@
 # 月次統合
 
-`ai-driven-development-research`スキルを使用してください。
+`ai-dlc-research`スキルを使用してください。
 
 `research/reading-log.md`で今月`read`になっている資料を対象に、個別要約の列挙ではなく、研究間の比較と統合を行ってください。
 

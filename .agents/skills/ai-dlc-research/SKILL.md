@@ -1,5 +1,5 @@
 ---
-name: ai-driven-development-research
+name: ai-dlc-research
 description: Research, rank, critically review, and log papers and industry reports about AI-driven software development. Use for weekly literature scans, selecting 1-2 readings, duplicate checks, PDF deep reviews, reading-log updates, and monthly evidence synthesis. Do not use for ordinary coding tasks or generic AI news.
 license: MIT
 ---
@@ -108,7 +108,7 @@ PDFまたは本文が提供された場合、単なる要約ではなく次を�
 必要に応じて次を使う。
 
 ```bash
-python .agents/skills/ai-driven-development-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
+python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
 ```
 
 変更前後の差分を確認する。

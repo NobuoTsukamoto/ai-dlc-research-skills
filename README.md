@@ -8,7 +8,7 @@ AI-DCLのリサーチを行うために、CodexとGitHub Copilot Appの両方で
 .
 ├── AGENTS.md
 ├── .github/copilot-instructions.md
-├── .agents/skills/ai-driven-development-research/
+├── .agents/skills/ai-dlc-research/
 │   ├── SKILL.md
 │   ├── references/
 │   ├── scripts/
@@ -33,8 +33,8 @@ AI-DCLのリサーチを行うために、CodexとGitHub Copilot Appの両方で
 
 ```bash
 uv sync
-uv run .agents/skills/ai-driven-development-research/scripts/validate_skill.py
-uv run python -m unittest discover -s .agents/skills/ai-driven-development-research/tests -p "test_*.py"
+uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
+uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
 ```
 
 以後は、このリポジトリ直下で `uv run ...` を使えば、`.venv` の Python でそのまま実行できます。
@@ -45,16 +45,16 @@ uv run python -m unittest discover -s .agents/skills/ai-driven-development-resea
 
 ```bash
 # スキル定義と必須ファイルの整合性確認
-uv run .agents/skills/ai-driven-development-research/scripts/validate_skill.py
+uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
 
 # 付属テストの実行
-uv run python -m unittest discover -s .agents/skills/ai-driven-development-research/tests -p "test_*.py"
+uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
 
 # 読書ログの重複確認
-uv run python .agents/skills/ai-driven-development-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
+uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
 
 # 読書ログへの追加
-uv run python .agents/skills/ai-driven-development-research/scripts/reading_log.py add --log research/reading-log.md --date "2026-07-26" --status candidate --title "Paper title" --authors "Author A; Author B" --year 2026 --type "査読論文" --venue "ICSE" --topics "agents; evaluation" --score 8 --url "https://doi.org/10.xxxx/xxxxx" --notes "first pass"
+uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py add --log research/reading-log.md --date "2026-07-26" --status candidate --title "Paper title" --authors "Author A; Author B" --year 2026 --type "査読論文" --venue "ICSE" --topics "agents; evaluation" --score 8 --url "https://doi.org/10.xxxx/xxxxx" --notes "first pass"
 ```
 
 ## Codex
@@ -68,7 +68,7 @@ AI駆動開発の最新論文を調査し、今週読む1～2本を選んでく�
 明示呼び出し:
 
 - `/skills`から選択
-- または`$ai-driven-development-research`を指定
+- または`$ai-dlc-research`を指定
 
 ## GitHub Copilot App
 
@@ -95,8 +95,8 @@ AI駆動開発の今週の推薦を作成してください。
 ## 検証
 
 ```bash
-uv run .agents/skills/ai-driven-development-research/scripts/validate_skill.py
-uv run python -m unittest discover -s .agents/skills/ai-driven-development-research/tests -p "test_*.py"
+uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
+uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
 ```
 
 ## 注意

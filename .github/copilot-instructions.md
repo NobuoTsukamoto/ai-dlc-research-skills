@@ -2,7 +2,7 @@
 
 This repository manages research on AI-driven software development.
 
-For weekly literature scans, paper ranking, critical paper reviews, duplicate checks, reading-log updates, or monthly evidence synthesis, use the `ai-driven-development-research` agent skill in `.agents/skills/ai-driven-development-research/`.
+For weekly literature scans, paper ranking, critical paper reviews, duplicate checks, reading-log updates, or monthly evidence synthesis, use the `ai-dlc-research` agent skill in `.agents/skills/ai-dlc-research/`.
 
 Before evaluating material, read:
 

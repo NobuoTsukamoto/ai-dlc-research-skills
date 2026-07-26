@@ -4,7 +4,7 @@
 
 ## ルーティング
 
-次の依頼では `.agents/skills/ai-driven-development-research/SKILL.md` を使用してください。
+次の依頼では `.agents/skills/ai-dlc-research/SKILL.md` を使用してください。
 
 - 最新論文・調査報告の週次探索
 - 読むべき1～2本の選定

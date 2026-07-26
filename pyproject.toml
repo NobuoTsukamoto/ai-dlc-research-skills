@@ -1,5 +1,5 @@
 [project]
-name = "ai-driven-development-research-agent-skill"
+name = "ai-dlc-research-skills"
 version = "0.1.0"
 description = "Repository-scoped Agent Skill for AI-driven development research workflows."
 readme = "README.md"

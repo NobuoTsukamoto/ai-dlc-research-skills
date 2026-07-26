@@ -3,6 +3,6 @@ revision = 3
 requires-python = "==3.12.*"
 
 [[package]]
-name = "ai-driven-development-research-agent-skill"
+name = "ai-dlc-research-skills"
 version = "0.1.0"
 source = { virtual = "." }
