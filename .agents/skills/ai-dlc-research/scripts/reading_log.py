@@ -159,7 +159,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         print("DUPLICATE")
         for row in matches:
             print(" | ".join(row.cells))
-        return 2
+        return 0
     print("NOT_FOUND")
     return 0
 

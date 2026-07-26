@@ -13,7 +13,9 @@ SKILL_DIR = ROOT / ".agents/skills/ai-dlc-research"
 SKILL = SKILL_DIR / "SKILL.md"
 REQUIRED = [
     ROOT / "AGENTS.md",
+    ROOT / "LICENSE",
     ROOT / ".github/copilot-instructions.md",
+    ROOT / ".github/workflows/ci.yml",
     ROOT / "research/research-policy.md",
     ROOT / "research/reading-log.md",
     SKILL,

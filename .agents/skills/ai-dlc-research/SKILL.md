@@ -44,7 +44,9 @@ AI駆動ソフトウェア開発に関する資料を、証拠の強さと実務
 6. プレプリントと採録版が同一研究なら同一資料として扱い、採録版を優先する。
 7. `research/research-policy.md` の10点基準で採点する。
 8. 原則7点以上から最大2本を推薦する。
-9. 良質な新規資料がなければ明記し、新着を水増ししない。
+9. 良質な新規資料がなければ「新着推薦0件」と明記し、新着を水増ししない。
+10. 直近30日に7点以上の新規資料がない場合は、過去の未読重要研究を探し、候補ごとに重複確認・採点したうえで最大1本をバックログ推薦する。
+11. バックログ推薦は新着推薦と混ぜず、「過去の未読重要研究」と表示する。該当資料がなければ推薦なしとする。
 
 検索語と探索先は `references/search-strategy.md`、情報源と証拠の評価は `references/source-quality.md` を参照する。
 
@@ -127,6 +129,8 @@ PDFまたは本文が提供された場合、単なる要約ではなく次を�
 ```bash
 python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
 ```
+
+`check` は `DUPLICATE` と `NOT_FOUND` のどちらも正常終了 `0` とし、標準出力で判定する。引数や実行のエラーだけを非ゼロとする。
 
 `add` でステータスを `read` にする場合は `--read-date YYYY-MM-DD` を必須とする。
 

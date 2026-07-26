@@ -83,6 +83,34 @@ class ReadingLogTests(unittest.TestCase):
         with redirect_stderr(io.StringIO()):
             self.assertEqual(reading_log.cmd_add(args), 2)
 
+    def test_check_duplicate_is_a_successful_result(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "reading-log.md"
+            log.write_text(SAMPLE, encoding="utf-8")
+            args = Namespace(
+                log=str(log),
+                title="Different title",
+                doi="10.1000/xyz",
+            )
+
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(reading_log.cmd_check(args), 0)
+            self.assertTrue(output.getvalue().startswith("DUPLICATE"))
+
+    def test_check_not_found_is_a_successful_result(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "reading-log.md"
+            log.write_text(SAMPLE, encoding="utf-8")
+            args = Namespace(
+                log=str(log),
+                title="A New Study",
+                doi="10.1000/new",
+            )
+
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(reading_log.cmd_check(args), 0)
+            self.assertEqual(output.getvalue().strip(), "NOT_FOUND")
+
     def test_add_read_row_includes_read_date(self):
         with tempfile.TemporaryDirectory() as directory:
             log = Path(directory) / "reading-log.md"

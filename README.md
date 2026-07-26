@@ -7,7 +7,10 @@ AI-DLCのリサーチを行うために、CodexとGitHub Copilot Appの両方で
 ```text
 .
 ├── AGENTS.md
-├── .github/copilot-instructions.md
+├── LICENSE
+├── .github/
+│   ├── copilot-instructions.md
+│   └── workflows/ci.yml
 ├── .agents/skills/ai-dlc-research/
 │   ├── SKILL.md
 │   ├── references/
@@ -73,6 +76,12 @@ uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
 uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
 ```
 
+GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行します。
+
 ## 注意
 
 Web検索や外部サイトへのアクセス可否は、実行ホストと権限設定に依存します。検索が使えない場合も、ローカルPDFや候補一覧の評価には利用できます。
+
+## ライセンス
+
+MIT License。詳細は`LICENSE`を参照してください。
