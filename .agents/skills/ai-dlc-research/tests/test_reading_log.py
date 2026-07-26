@@ -22,15 +22,21 @@ SAMPLE = """# Log
 
 class ReadingLogTests(unittest.TestCase):
     def test_normalize_doi(self):
-        self.assertEqual(reading_log.normalize_doi("https://doi.org/10.1000/XYZ"), "10.1000/xyz")
+        self.assertEqual(
+            reading_log.normalize_doi("https://doi.org/10.1000/XYZ"), "10.1000/xyz"
+        )
 
     def test_duplicate_by_doi(self):
         rows = reading_log.parse_table_rows(SAMPLE)
-        self.assertEqual(len(reading_log.find_duplicates(rows, "Different title", "10.1000/xyz")), 1)
+        self.assertEqual(
+            len(reading_log.find_duplicates(rows, "Different title", "10.1000/xyz")), 1
+        )
 
     def test_duplicate_by_title(self):
         rows = reading_log.parse_table_rows(SAMPLE)
-        self.assertEqual(len(reading_log.find_duplicates(rows, "A Study of Coding Agents", "")), 1)
+        self.assertEqual(
+            len(reading_log.find_duplicates(rows, "A Study of Coding Agents", "")), 1
+        )
 
     def test_insert_row_replaces_blank(self):
         text = SAMPLE.replace(

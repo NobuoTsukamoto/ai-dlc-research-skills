@@ -79,7 +79,9 @@ def find_duplicates(rows: Iterable[Row], title: str, doi: str) -> list[Row]:
 
 def insert_row(text: str, row_line: str) -> str:
     lines = text.splitlines()
-    header_index = next((i for i, line in enumerate(lines) if line.startswith(HEADER_PREFIX)), None)
+    header_index = next(
+        (i for i, line in enumerate(lines) if line.startswith(HEADER_PREFIX)), None
+    )
     if header_index is None:
         raise ValueError("Reading log table header was not found.")
     separator_index = header_index + 1
@@ -116,12 +118,23 @@ def cmd_add(args: argparse.Namespace) -> int:
     text = path.read_text(encoding="utf-8")
     matches = find_duplicates(parse_table_rows(text), args.title, args.url or "")
     if matches and not args.force:
-        print("Duplicate candidate found. Use --force only after review.", file=sys.stderr)
+        print(
+            "Duplicate candidate found. Use --force only after review.", file=sys.stderr
+        )
         return 2
 
     values = [
-        args.date, args.status, args.title, args.authors, str(args.year),
-        args.type, args.venue, args.topics, str(args.score), args.url, args.notes,
+        args.date,
+        args.status,
+        args.title,
+        args.authors,
+        str(args.year),
+        args.type,
+        args.venue,
+        args.topics,
+        str(args.score),
+        args.url,
+        args.notes,
     ]
     row_line = "| " + " | ".join(escape_cell(v) for v in values) + " |"
     path.write_text(insert_row(text, row_line), encoding="utf-8")
@@ -142,8 +155,11 @@ def build_parser() -> argparse.ArgumentParser:
     add = sub.add_parser("add")
     add.add_argument("--log", required=True)
     add.add_argument("--date", required=True)
-    add.add_argument("--status", required=True,
-                     choices=["candidate", "selected", "reading", "read", "hold", "excluded"])
+    add.add_argument(
+        "--status",
+        required=True,
+        choices=["candidate", "selected", "reading", "read", "hold", "excluded"],
+    )
     add.add_argument("--title", required=True)
     add.add_argument("--authors", required=True)
     add.add_argument("--year", required=True, type=int)
