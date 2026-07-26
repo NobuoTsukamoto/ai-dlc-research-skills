@@ -36,3 +36,6 @@ jobs:
 
       - name: Run tests
         run: uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
+
+      - name: Run coding-agent update tests
+        run: uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"

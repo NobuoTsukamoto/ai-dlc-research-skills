@@ -1,6 +1,11 @@
-# AI駆動開発リサーチ Agent Skill
+# AI駆動開発リサーチ Agent Skills
 
-AI-DLCのリサーチを行うために、CodexとGitHub Copilot Appの両方で使えるリポジトリスコープの`Agent Skills`です。
+AI-DLCの論文調査と、AIコーディングエージェントの公式アップデート追跡を行う、CodexとGitHub Copilot App向けのリポジトリスコープ`Agent Skills`です。
+
+## スキル
+
+- `ai-dlc-research`: 論文・産業調査の探索、評価、精読、月次統合
+- `ai-coding-agent-updates`: GitHub Copilot、Copilot CLI/app、Codex、Claude Code、Cursor、Antigravity CLIの公式更新を日次・週次・月次で整理
 
 ## 構成
 
@@ -11,14 +16,17 @@ AI-DLCのリサーチを行うために、CodexとGitHub Copilot Appの両方で
 ├── .github/
 │   ├── copilot-instructions.md
 │   └── workflows/ci.yml
-├── .agents/skills/ai-dlc-research/
-│   ├── SKILL.md
-│   ├── references/
-│   ├── scripts/
-│   └── tests/
+├── .agents/skills/
+│   ├── ai-dlc-research/
+│   └── ai-coding-agent-updates/
 ├── research/
 │   ├── research-policy.md
 │   └── reading-log.md
+├── updates/
+│   ├── update-log.jsonl
+│   ├── daily/
+│   ├── weekly/
+│   └── monthly/
 ├── prompts/
 └── docs/
 ```
@@ -53,12 +61,19 @@ uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
 
 # 付属テストの実行
 uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
+uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
 
 # 読書ログの重複確認
 uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
 
 # 読書ログへの追加
 uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py add --log research/reading-log.md --date "2026-07-26" --status candidate --title "Paper title" --authors "Author A; Author B" --year 2026 --type "査読論文" --venue "ICSE" --topics "agents; evaluation" --score 8 --url "https://doi.org/10.xxxx/xxxxx" --notes "first pass"
+
+# 公式アップデートの重複確認
+uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py check --log updates/update-log.jsonl --tool openai-codex --title "Update title" --url "https://example.com/official-update"
+
+# 期間内の公式アップデート一覧
+uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py list --log updates/update-log.jsonl --from-date "2026-07-01" --to-date "2026-07-31" --format markdown
 ```
 
 `--status read` で追加する場合は、対象月を正確に判定できるよう `--read-date "YYYY-MM-DD"` も指定してください。
@@ -74,6 +89,7 @@ uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py add --log re
 ```bash
 uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
 uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
+uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
 ```
 
 GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行します。

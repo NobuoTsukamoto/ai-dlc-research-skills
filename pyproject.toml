@@ -1,7 +1,7 @@
 [project]
 name = "ai-dlc-research-skills"
 version = "0.1.0"
-description = "Repository-scoped Agent Skill for AI-driven development research workflows."
+description = "Repository-scoped Agent Skills for AI-driven development research and coding-agent update tracking."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = []

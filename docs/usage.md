@@ -27,6 +27,18 @@ Codex公式ドキュメントでサポートされる2つの流儀:
 - `/skills`または`$`による明示指定
 - 説明文（description）に基づく暗黙選択
 
+公式アップデート追跡は次のように呼び出します。
+
+```text
+$ai-coding-agent-updates
+
+昨日のGitHub Copilot、Copilot CLI、GitHub Copilot app、
+Codex、Claude Code、Cursor、Antigravity CLIの公式更新を確認し、
+日次レポートへ保存してください。
+```
+
+`Codex - Claude Code` は2つの独立した対象として扱います。GitHub Copilot appはデスクトップ製品、Copilot cloud agentはGitHub Copilotの一般機能として区別します。
+
 ## Copilot Appで使う
 
 Copilot Appで対象リポジトリを選択し、次のように依頼します。
@@ -71,6 +83,16 @@ ai-dlc-researchスキルを使用して、
 - `research/reading-log.md`は明示依頼がなければ変更しない
 
 ## 用意したプロンプト
+
+### コーディングエージェント更新
+
+- 日次: `prompts/daily-tool-updates.md`
+- 週次: `prompts/weekly-tool-updates.md`
+- 月次: `prompts/monthly-tool-updates.md`
+
+日次は公式情報だけを要約して `updates/daily/` と `updates/update-log.jsonl` へ保存します。週次は日次を統合して根拠のあるバズを最大3件抽出します。月次は週次を統合し、対象外の有望ツールを最大5件示します。根拠がなければ「該当なし」とします。
+
+更新レポートをファイルへ保存せず確認だけ行う場合は、プロンプトに「プレビュー」「調査だけ」と指定してください。
 
 ### 週次調査
 
@@ -118,3 +140,17 @@ DUPLICATE
 スキルは、ユーザーがログ更新を明示的に依頼したことを確認してから`reading_log.py add`を実行します。スクリプト単体はユーザー意図を判定しません。
 
 月次統合では、ステータスが`read`で、かつ`読了日`が対象月に含まれる資料だけを使用します。CLIで`read`として追加する場合は`--read-date "YYYY-MM-DD"`が必須です。
+
+## update-logの重複確認
+
+公式アップデートのcanonical記録はJSONLで保持します。
+
+```bash
+uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py check \
+  --log updates/update-log.jsonl \
+  --tool openai-codex \
+  --title "Update title" \
+  --url "https://example.com/official-update"
+```
+
+同一ツール内で、URLの追跡パラメータ違いまたは正規化タイトル一致を重複として判定します。1つの記事が複数surfaceへ独立した変更を含む場合は、対象IDごとに記録できます。週次・月次の期間抽出には `update_log.py list` を使用します。

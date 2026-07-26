@@ -47,6 +47,33 @@ class ValidateSkillTests(unittest.TestCase):
             " ".join(validate_skill.validate_skill_text(text)),
         )
 
+    def test_validates_second_skill_name_and_references(self):
+        skill_dir = Path("ai-coding-agent-updates")
+        text = """---
+name: ai-coding-agent-updates
+description: Track official AI coding-agent product updates in daily, weekly, and monthly reports.
+---
+
+Read references/official-sources.md, references/output-templates.md, and
+references/buzz-and-discovery.md. Store canonical updates in
+updates/update-log.jsonl.
+"""
+        self.assertEqual(
+            validate_skill.validate_skill_text(
+                text,
+                skill_dir=skill_dir,
+                required_references=validate_skill.UPDATE_REQUIRED_REFERENCES,
+            ),
+            [],
+        )
+
+    def test_rejects_unresolved_todo(self):
+        text = VALID_SKILL + "\nTODO: finish this section\n"
+        self.assertIn(
+            "unresolved TODO",
+            " ".join(validate_skill.validate_skill_text(text)),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

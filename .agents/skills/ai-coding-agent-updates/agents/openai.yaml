@@ -1,0 +1,4 @@
+interface:
+  display_name: "AIコーディングエージェント更新情報"
+  short_description: "公式更新を日次・週次・月次で追跡し、注目動向も整理"
+  default_prompt: "Use $ai-coding-agent-updates to create today's official AI coding agent update digest in Japanese."
