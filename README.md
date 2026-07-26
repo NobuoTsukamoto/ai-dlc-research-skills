@@ -1,6 +1,6 @@
 # AI駆動開発リサーチ Agent Skill
 
-AI-DCLのリサーチを行うために、CodexとGitHub Copilot Appの両方で使えるリポジトリスコープの`Agent Skills`です。
+AI-DLCのリサーチを行うために、CodexとGitHub Copilot Appの両方で使えるリポジトリスコープの`Agent Skills`です。
 
 ## 構成
 

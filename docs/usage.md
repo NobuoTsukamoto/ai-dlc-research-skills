@@ -34,8 +34,8 @@ Copilot Appで対象リポジトリを選択し、次のように依頼します
 ```text
 このリポジトリのAgent Skillを使用してください。
 
-research/research-policy.mdと
-research/reading-log.mdを確認し、
+research/research-policy.mdを確認し、
+reading_log.py checkで候補ごとに重複確認を行って、
 AI駆動開発に関する今週の推薦を作成してください。
 
 ログはまだ変更しないでください。
@@ -66,6 +66,7 @@ ai-dlc-researchスキルを使用して、
 - 原則7点以上を推薦
 - 推薦は最大2本
 - DOIまたは正規化タイトルで重複確認
+- 週次探索では`reading-log.md`を全文読み込みせず、候補ごとに照合
 - プレプリントと採録版は同一研究として処理
 - `research/reading-log.md`は明示依頼がなければ変更しない
 

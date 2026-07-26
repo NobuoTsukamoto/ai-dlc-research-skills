@@ -28,6 +28,7 @@ REQUIRED_REFERENCES = (
     "research/reading-log.md",
     "references/output-templates.md",
     "references/search-strategy.md",
+    "references/source-quality.md",
 )
 
 

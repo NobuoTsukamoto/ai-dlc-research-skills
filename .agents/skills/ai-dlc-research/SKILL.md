@@ -10,13 +10,19 @@ AI駆動ソフトウェア開発に関する資料を、証拠の強さと実務
 
 ## 必ず最初に確認するもの
 
-リポジトリルートを基準として、以下を読む。
+リポジトリルートを基準として、次の順に確認する。
 
 1. `research/research-policy.md`
-2. `research/reading-log.md`
-3. 必要に応じて、このスキルの `references/` 内の資料
+2. 依頼がどのタスクに該当するか
+3. タスクに応じて必要なファイルだけを読む
 
-上記ファイルが存在しない場合は、欠落を明記する。検索・評価は続行してよいが、重複判定は「不完全」と表示する。
+`research/reading-log.md` の扱いは次のとおり。
+
+- **weekly-scan / candidate-review**: 全文を読まず、候補ごとに `reading_log.py check` で照合する
+- **deep-review**: 重複・ステータス確認を依頼された場合だけ `reading_log.py check` で照合する
+- **log-update / monthly-synthesis**: 全文を読む
+
+`research/research-policy.md` が存在しない場合は欠落を明記する。重複確認が必要なタスクで `research/reading-log.md` または照合スクリプトが存在しない場合も検索・評価は続行してよいが、重複判定は「不完全」と表示する。
 
 ## タスクの判定
 
@@ -34,15 +40,17 @@ AI駆動ソフトウェア開発に関する資料を、証拠の強さと実務
 2. 直近7日を検索し、弱い場合のみ30日へ拡張する。
 3. 査読済みジャーナル、査読済み国際会議、体系的レビュー、方法・データが明示されたプレプリント、方法論が明示された産業調査、ベンダー記事の順で優先する。
 4. タイトル、著者、日付、掲載先、査読状況、DOI、本文アクセスを一次情報で確認する。
-5. `research/reading-log.md` と照合する。DOIを優先し、DOIがなければ正規化したタイトルで確認する。
+5. 候補ごとに `reading_log.py check` を実行する。DOIを優先し、DOIがなければ正規化したタイトルで確認する。
 6. プレプリントと採録版が同一研究なら同一資料として扱い、採録版を優先する。
 7. `research/research-policy.md` の10点基準で採点する。
 8. 原則7点以上から最大2本を推薦する。
 9. 良質な新規資料がなければ明記し、新着を水増ししない。
 
-検索語と探索先は `references/search-strategy.md` を参照する。
+検索語と探索先は `references/search-strategy.md`、情報源と証拠の評価は `references/source-quality.md` を参照する。
 
 ## candidate-review
+
+評価前に `references/source-quality.md` を読む。重複確認が必要な場合は、候補ごとに `reading_log.py check` を実行する。
 
 候補ごとに次を確認する。
 
@@ -60,6 +68,8 @@ AI駆動ソフトウェア開発に関する資料を、証拠の強さと実務
 書誌情報や方法が確認できない資料は、証拠の強さを高く評価しない。
 
 ## deep-review
+
+精読前に `references/source-quality.md` を読み、資料区分に応じた証拠評価の観点を確認する。
 
 PDFまたは本文が提供された場合、単なる要約ではなく次を行う。
 

@@ -19,7 +19,7 @@ license: MIT
 ---
 
 Read research/research-policy.md and research/reading-log.md.
-Use references/output-templates.md and references/search-strategy.md.
+Use references/output-templates.md, references/search-strategy.md, and references/source-quality.md.
 """
 
 
