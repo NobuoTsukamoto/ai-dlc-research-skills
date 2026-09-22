@@ -6,6 +6,8 @@ from __future__ import annotations
 import shutil
 import subprocess
 import sys
+import os
+from base64 import b64encode
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,6 +66,19 @@ def sync() -> None:
         cwd=DATA,
     )
     run("git", "commit", "-m", "chore: update generated reports", cwd=DATA)
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        basic_auth = b64encode(f"x-access-token:{token}".encode()).decode()
+        run(
+            "git",
+            "-c",
+            f"http.extraheader=AUTHORIZATION: basic {basic_auth}",
+            "push",
+            "origin",
+            "HEAD:data",
+            cwd=DATA,
+        )
+        return
     run("git", "push", "origin", "HEAD:data", cwd=DATA)
 
 

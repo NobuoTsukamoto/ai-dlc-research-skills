@@ -16,13 +16,12 @@ concurrency:
 jobs:
   monthly:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Check out main
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
           ref: main
 
       - name: Prepare data branch
@@ -43,4 +42,6 @@ jobs:
         run: python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
 
       - name: Commit generated updates to data
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python .github/scripts/data_branch.py sync
