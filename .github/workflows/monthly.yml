@@ -52,11 +52,14 @@ jobs:
       - name: Validate generated log
         run: python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
 
+      - name: Archive generated updates
+        run: tar -czf monthly-generated-updates.tar.gz updates
+
       - name: Upload generated updates
         uses: actions/upload-artifact@v4
         with:
           name: monthly-generated-updates
-          path: updates
+          path: monthly-generated-updates.tar.gz
 
   sync-data:
     needs: monthly
@@ -79,6 +82,9 @@ jobs:
         with:
           name: monthly-generated-updates
           path: .
+
+      - name: Extract generated updates
+        run: tar -xzf monthly-generated-updates.tar.gz
 
       - name: Commit generated updates to data
         env:
