@@ -90,7 +90,7 @@ ai-dlc-researchスキルを使用して、
 - 週次: `prompts/weekly-tool-updates.md`
 - 月次: `prompts/monthly-tool-updates.md`
 
-日次は公式情報だけを要約して `updates/daily/` と `updates/update-log.jsonl` へ保存します。週次は日次を統合して根拠のあるバズを最大3件抽出します。月次は週次を統合し、対象外の有望ツールを最大5件示します。根拠がなければ「該当なし」とします。
+日次は公式情報だけを要約して `data` ブランチの `updates/daily/` と `updates/update-log.jsonl` へ保存します。週次は日次を統合して根拠のあるバズを最大3件抽出します。月次は週次を統合し、対象外の有望ツールを最大5件示します。根拠がなければ「該当なし」とします。
 
 更新レポートをファイルへ保存せず確認だけ行う場合は、プロンプトに「プレビュー」「調査だけ」と指定してください。
 
@@ -143,7 +143,7 @@ DUPLICATE
 
 ## update-logの重複確認
 
-公式アップデートのcanonical記録はJSONLで保持します。
+公式アップデートのcanonical記録は `data` ブランチのJSONLで保持します。
 
 ```bash
 uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py check \
