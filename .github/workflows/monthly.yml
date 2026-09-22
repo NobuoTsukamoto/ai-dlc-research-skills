@@ -5,10 +5,6 @@ on:
     - cron: "0 0 1 * *"
   workflow_dispatch:
 
-permissions:
-  contents: write
-  copilot-requests: write
-
 concurrency:
   group: generated-updates
   cancel-in-progress: false
@@ -16,6 +12,11 @@ concurrency:
 jobs:
   monthly:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      copilot-requests: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Check out main
         uses: actions/checkout@v6
@@ -50,6 +51,34 @@ jobs:
 
       - name: Validate generated log
         run: python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
+
+      - name: Upload generated updates
+        uses: actions/upload-artifact@v4
+        with:
+          name: monthly-generated-updates
+          path: updates
+
+  sync-data:
+    needs: monthly
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: main
+
+      - name: Prepare data branch
+        run: python .github/scripts/data_branch.py prepare
+
+      - name: Download generated updates
+        uses: actions/download-artifact@v4
+        with:
+          name: monthly-generated-updates
+          path: updates
 
       - name: Commit generated updates to data
         env:
