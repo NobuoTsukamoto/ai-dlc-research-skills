@@ -155,11 +155,11 @@ uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py check
 
 同一ツール内で、URLの追跡パラメータ違いまたは正規化タイトル一致を重複として判定します。1つの記事が複数surfaceへ独立した変更を含む場合は、対象IDごとに記録できます。週次・月次の期間抽出には `update_log.py list` を使用します。
 
-要約の転載を防ぐため、`summary` と `impact` はそれぞれ500文字以内にし、両欄で40文字以上連続して一致する文章を避けます。ログ全体の検証は次のコマンドで実行できます。
+要約と実務への影響の混同を防ぐため、`summary` と `impact` はそれぞれ500文字以内にし、両欄で40文字以上連続して一致する文章を避けます。ログ全体の検証は次のコマンドで実行できます。
 
 ```bash
 uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate \
   --log updates/update-log.jsonl
 ```
 
-この連続一致検出は転載の防波堤であり、公式文との類似性を完全に判定するものではありません。公式文の引用は短い語句に限定し、引用符とcanonical URLを付けてください。
+この連続一致検出は要約と推論の混同を検出する検査であり、公式ページ本文との類似性や転載を判定するものではありません。厳格な本文欄検証は `validate` だけで行い、`check` / `add` / `list` は既存のlegacy行を参照できます。公式文の引用は40文字以内の短い語句に限定し、引用符とcanonical URLを付けてください。

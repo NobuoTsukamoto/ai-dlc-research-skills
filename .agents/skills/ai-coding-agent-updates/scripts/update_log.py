@@ -154,7 +154,7 @@ def canonicalize_url(value: str) -> str:
     )
 
 
-def load_log(path: Path) -> list[dict[str, Any]]:
+def load_log(path: Path, *, validate_text: bool = False) -> list[dict[str, Any]]:
     if not path.exists():
         return []
 
@@ -192,7 +192,8 @@ def load_log(path: Path) -> list[dict[str, Any]]:
         parse_iso_date(str(item["published_date"]), "published_date")
         parse_iso_date(str(item["discovered_date"]), "discovered_date")
         canonicalize_url(str(item["url"]))
-        validate_text_fields(item["summary"], item["impact"])
+        if validate_text:
+            validate_text_fields(item["summary"], item["impact"])
         items.append(item)
     return items
 
@@ -316,7 +317,7 @@ def command_list(args: argparse.Namespace) -> int:
 
 
 def command_validate(args: argparse.Namespace) -> int:
-    items = load_log(args.log)
+    items = load_log(args.log, validate_text=True)
     print(f"VALID\t{len(items)}")
     return 0
 
