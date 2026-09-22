@@ -15,9 +15,12 @@ ROOT_REQUIRED = [
     ROOT / "LICENSE",
     ROOT / ".github/copilot-instructions.md",
     ROOT / ".github/workflows/ci.yml",
+    ROOT / ".github/workflows/daily.yml",
+    ROOT / ".github/workflows/weekly.yml",
+    ROOT / ".github/workflows/monthly.yml",
+    ROOT / ".github/scripts/data_branch.py",
     ROOT / "research/research-policy.md",
     ROOT / "research/reading-log.md",
-    ROOT / "updates/update-log.jsonl",
 ]
 SKILL_REQUIREMENTS = {
     "ai-dlc-research": (

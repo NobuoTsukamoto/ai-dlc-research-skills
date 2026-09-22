@@ -1,0 +1,92 @@
+name: Monthly coding-agent updates
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"
+  workflow_dispatch:
+
+concurrency:
+  group: generated-updates
+  cancel-in-progress: false
+
+jobs:
+  monthly:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      copilot-requests: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: main
+
+      - name: Prepare data branch
+        run: python .github/scripts/data_branch.py prepare
+
+      - name: Install GitHub Copilot CLI
+        run: npm install --global @github/copilot
+
+      - name: Check previous weekly report
+        run: |
+          target_month="$(TZ=Asia/Tokyo date -d '1 month ago' +%Y-%m)"
+          target_week="$(TZ=Asia/Tokyo date -d "${target_month}-01 +1 month -1 day" +%G-W%V)"
+          report_path="updates/weekly/${target_week}.md"
+          test -s "$report_path" || {
+            echo "Missing weekly report: $report_path" >&2
+            exit 1
+          }
+
+      - name: Generate monthly report
+        run: |
+          target_month="$(TZ=Asia/Tokyo date -d '1 month ago' +%Y-%m)"
+          prompt="$(sed "s/{YYYY-MM}/$target_month/" prompts/monthly-tool-updates.md)"
+          copilot -p "$prompt" -s \
+            --allow-tool='shell(*)' \
+            --allow-tool='web_fetch(*)'
+
+      - name: Validate generated log
+        run: python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
+
+      - name: Archive generated updates
+        run: tar -czf monthly-generated-updates.tar.gz updates
+
+      - name: Upload generated updates
+        uses: actions/upload-artifact@v4
+        with:
+          name: monthly-generated-updates
+          path: monthly-generated-updates.tar.gz
+
+  sync-data:
+    needs: monthly
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: main
+
+      - name: Prepare data branch
+        run: python .github/scripts/data_branch.py prepare
+
+      - name: Download generated updates
+        uses: actions/download-artifact@v4.1.3
+        with:
+          name: monthly-generated-updates
+          path: .
+
+      - name: Extract generated updates
+        run: tar -xzf monthly-generated-updates.tar.gz
+
+      - name: Commit generated updates to data
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python .github/scripts/data_branch.py sync

@@ -22,11 +22,7 @@ AI-DLCの論文調査と、AIコーディングエージェントの公式アッ
 ├── research/
 │   ├── research-policy.md
 │   └── reading-log.md
-├── updates/
-│   ├── update-log.jsonl
-│   ├── daily/
-│   ├── weekly/
-│   └── monthly/
+├── updates/                 # dataブランチで生成（mainには置かない）
 ├── prompts/
 └── docs/
 ```
@@ -93,6 +89,16 @@ uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tes
 ```
 
 GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行します。
+
+## 自動更新
+
+`.github/workflows/daily.yml`、`weekly.yml`、`monthly.yml` がGitHub Copilot CLIで
+公式更新を調査し、生成物を `data` ブランチの `updates/` に保存します。ローカルで
+更新ログのコマンド例を実行する場合は、先に `git switch data` で `data` ブランチを
+チェックアウトしてください。各ワークフローはUTC 00:00（JST 09:00）を基準に実行され、
+`workflow_dispatch` でも起動できます。
+`data` への生成物pushはCIの対象外です。Copilot CLI、ログ検証、pushのいずれかが
+失敗した場合、GitHub Actionsの実行は失敗として表示されます。
 
 ## 注意
 

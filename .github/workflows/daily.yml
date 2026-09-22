@@ -1,0 +1,49 @@
+name: Daily coding-agent updates
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  copilot-requests: write
+
+concurrency:
+  group: generated-updates
+  cancel-in-progress: false
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Prepare data branch
+        run: python .github/scripts/data_branch.py prepare
+
+      - name: Install GitHub Copilot CLI
+        run: npm install --global @github/copilot
+
+      - name: Generate daily report
+        run: |
+          target_date="$(TZ=Asia/Tokyo date -d 'yesterday' +%F)"
+          prompt="$(sed "s/{YYYY-MM-DD}/$target_date/" prompts/daily-tool-updates.md)"
+          copilot -p "$prompt" -s \
+            --allow-tool='shell(*)' \
+            --allow-tool='web_fetch(*)'
+
+      - name: Validate generated log
+        run: |
+          target_date="$(TZ=Asia/Tokyo date -d 'yesterday' +%F)"
+          test -s "updates/daily/${target_date}.md"
+          python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
+
+      - name: Commit generated updates to data
+        run: python .github/scripts/data_branch.py sync
