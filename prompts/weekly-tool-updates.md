@@ -9,4 +9,4 @@ Asia/Tokyoの `{YYYY-Www}` を対象に、保存済みdailyを統合してくだ
 - 対象週のコミュニティ反応を追加調査する
 - バズ判定は `references/buzz-and-discovery.md` に従う
 - 根拠が不十分なら「バズ: 該当なし」とする
-- weeklyテンプレートでレポートを保存する
+- weeklyテンプレートでレポートをファイル書き込みツールまたはshellツールで保存する

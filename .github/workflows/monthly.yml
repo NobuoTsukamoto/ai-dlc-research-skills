@@ -47,6 +47,7 @@ jobs:
           prompt="$(sed "s/{YYYY-MM}/$target_month/" prompts/monthly-tool-updates.md)"
           copilot -p "$prompt" -s \
             --allow-tool='shell(*)' \
+            --allow-tool='write' \
             --allow-tool='web_fetch(*)'
 
       - name: Validate generated log
