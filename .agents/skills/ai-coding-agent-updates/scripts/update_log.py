@@ -317,6 +317,8 @@ def command_list(args: argparse.Namespace) -> int:
 
 
 def command_validate(args: argparse.Namespace) -> int:
+    if not args.log.exists():
+        raise LogError(f"log does not exist: {args.log}")
     items = load_log(args.log, validate_text=True)
     print(f"VALID\t{len(items)}")
     return 0

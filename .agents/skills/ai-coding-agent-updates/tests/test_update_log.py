@@ -299,6 +299,15 @@ class UpdateLogTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(stdout.getvalue().strip(), "VALID\t1")
 
+    def test_validate_rejects_missing_log(self):
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            exit_code = update_log.main(
+                ["validate", "--log", str(self.log)]
+            )
+        self.assertEqual(exit_code, 2)
+        self.assertIn("does not exist", stderr.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()
