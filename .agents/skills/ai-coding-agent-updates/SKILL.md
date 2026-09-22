@@ -38,6 +38,9 @@ description: Track, verify, summarize, and persist official product updates for 
 7. 全primary sourceを確認できた場合だけ「更新なし」と断定する。取得不能があれば「確認不能」または `partial` とする。
 8. 同一ツールで同じURL、または実質同じタイトルは1件に統合する。複数surfaceへ独立した変更を含む記事は、対象IDごとに記録してよい。
 9. 日本語で簡潔に書き、製品名、コマンド名、バージョンは原表記を維持する。
+10. 公式文をそのまま転載せず、自分の言葉で要約する。`summary` と `impact` はそれぞれ500文字以内とし、コードブロックや長い箇条書きは貼り付けない。
+11. 引用は必要最小限の短い語句（目安として1レスポンス1箇所、15語程度以下）にとどめ、引用符とcanonical URLを付ける。事実の要約と実務への影響（推論）を分ける。
+12. `update_log.py validate` は空欄、文字数超過、`summary` と `impact` 間の40文字以上の連続一致を拒否する。これは転載の防波堤であり、最終的な人手レビューの代替ではない。
 
 ## daily
 
@@ -140,3 +143,4 @@ uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py list 
 - previewやexperimentalをGAと表現しない。
 - 更新なし、バズなし、有望ツールなしを枠埋めしない。
 - URL短縮サービスや転載ページをcanonical sourceにしない。
+- 公式ページの段落、コードブロック、コマンド一覧、長い箇条書きをコピーしない。
