@@ -13,6 +13,10 @@ concurrency:
   group: generated-updates
   cancel-in-progress: false
 
+env:
+  COPILOT_MODEL: ${{ vars.COPILOT_MODEL || 'gpt-5.6-luna' }}
+  COPILOT_ALLOWED_URLS: github.com,api.github.com,raw.githubusercontent.com,github.blog,learn.chatgpt.com,cursor.com,antigravity.google
+
 jobs:
   weekly:
     runs-on: ubuntu-latest
@@ -36,9 +40,11 @@ jobs:
           target_week="$(TZ=Asia/Tokyo date -d '7 days ago' +%G-W%V)"
           prompt="$(sed "s/{YYYY-Www}/$target_week/" prompts/weekly-tool-updates.md)"
           copilot -p "$prompt" -s \
+            --model="$COPILOT_MODEL" \
             --allow-tool='shell' \
             --allow-tool='write' \
-            --allow-tool='web_fetch'
+            --allow-tool='web_fetch' \
+            --allow-url="$COPILOT_ALLOWED_URLS"
 
       - name: Validate generated log
         run: |
