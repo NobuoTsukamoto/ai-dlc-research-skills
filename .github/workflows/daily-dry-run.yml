@@ -1,0 +1,119 @@
+name: Daily coding-agent updates dry run
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: "Target date in Asia/Tokyo (YYYY-MM-DD). Defaults to yesterday."
+        required: false
+        type: string
+      live_fetch:
+        description: "Run Copilot and web_fetch. This consumes AI credits."
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  copilot-requests: write
+
+concurrency:
+  group: daily-updates-dry-run-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  COPILOT_CLI_VERSION: "1.0.87"
+  COPILOT_MODEL: gpt-5.4-nano
+  COPILOT_ALLOWED_URLS: github.com,api.github.com,raw.githubusercontent.com,github.blog,learn.chatgpt.com,cursor.com,antigravity.google
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine target date
+        env:
+          REQUESTED_TARGET_DATE: ${{ inputs.target_date }}
+        run: |
+          if [[ -n "$REQUESTED_TARGET_DATE" ]]; then
+            if [[ ! "$REQUESTED_TARGET_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || \
+               [[ "$(date -d "$REQUESTED_TARGET_DATE" +%F 2>/dev/null)" != "$REQUESTED_TARGET_DATE" ]]; then
+              echo "target_date must be a valid YYYY-MM-DD date: $REQUESTED_TARGET_DATE" >&2
+              exit 1
+            fi
+            target_date="$REQUESTED_TARGET_DATE"
+          else
+            target_date="$(TZ=Asia/Tokyo date -d 'yesterday' +%F)"
+          fi
+          echo "TARGET_DATE=$target_date" >> "$GITHUB_ENV"
+
+      - name: Install pinned GitHub Copilot CLI
+        run: npm install --global "@github/copilot@${COPILOT_CLI_VERSION}"
+
+      - name: Validate Copilot CLI configuration
+        run: |
+          copilot --version
+          copilot --help | grep -F -- '--allow-url'
+          copilot --help | grep -F -- '--model'
+          echo "Model: $COPILOT_MODEL"
+          echo "Allowed URLs: $COPILOT_ALLOWED_URLS"
+          if [[ "${{ inputs.live_fetch }}" != "true" ]]; then
+            echo "Configuration-only dry run complete; no AI credits were consumed."
+          fi
+
+      - name: Prepare data branch snapshot
+        if: inputs.live_fetch
+        run: python .github/scripts/data_branch.py prepare
+
+      - name: Generate daily report without publishing
+        if: inputs.live_fetch
+        run: |
+          set -o pipefail
+          prompt="$(sed "s/{YYYY-MM-DD}/$TARGET_DATE/" prompts/daily-tool-updates.md)"
+          copilot -p "$prompt" -s \
+            --model="$COPILOT_MODEL" \
+            --no-ask-user \
+            --allow-tool='shell' \
+            --allow-tool='write' \
+            --allow-tool='web_fetch' \
+            --allow-url="$COPILOT_ALLOWED_URLS" \
+            | tee copilot-dry-run-output.txt
+
+      - name: Validate generated result
+        if: inputs.live_fetch
+        run: |
+          report_path="updates/daily/${TARGET_DATE}.md"
+          test -s "$report_path" || {
+            echo "Missing or empty daily report: $report_path" >&2
+            find updates -maxdepth 3 -type f -print >&2
+            exit 1
+          }
+          python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
+          if grep -Eiq 'permission denied|could not request permission|web.?fetch.*(権限拒否|取得不能)' "$report_path" copilot-dry-run-output.txt; then
+            echo "Copilot reported a web access permission failure." >&2
+            exit 1
+          fi
+
+      - name: Collect dry-run artifact
+        if: inputs.live_fetch && always()
+        run: |
+          mkdir -p dry-run-artifact
+          report_path="updates/daily/${TARGET_DATE}.md"
+          [[ ! -f "$report_path" ]] || cp "$report_path" dry-run-artifact/
+          [[ ! -f updates/update-log.jsonl ]] || cp updates/update-log.jsonl dry-run-artifact/
+          [[ ! -f copilot-dry-run-output.txt ]] || cp copilot-dry-run-output.txt dry-run-artifact/
+
+      - name: Upload dry-run result
+        if: inputs.live_fetch && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-updates-dry-run-${{ env.TARGET_DATE }}
+          path: dry-run-artifact/
+          if-no-files-found: warn
+          retention-days: 7
