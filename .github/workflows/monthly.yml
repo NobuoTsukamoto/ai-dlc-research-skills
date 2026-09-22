@@ -78,7 +78,7 @@ jobs:
         uses: actions/download-artifact@v4.1.3
         with:
           name: monthly-generated-updates
-          path: updates
+          path: .
 
       - name: Commit generated updates to data
         env:
