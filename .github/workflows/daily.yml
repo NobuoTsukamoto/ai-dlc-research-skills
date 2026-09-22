@@ -28,21 +28,27 @@ jobs:
       - name: Prepare data branch
         run: python .github/scripts/data_branch.py prepare
 
+      - name: Determine target date
+        run: echo "TARGET_DATE=$(TZ=Asia/Tokyo date -d 'yesterday' +%F)" >> "$GITHUB_ENV"
+
       - name: Install GitHub Copilot CLI
         run: npm install --global @github/copilot
 
       - name: Generate daily report
         run: |
-          target_date="$(TZ=Asia/Tokyo date -d 'yesterday' +%F)"
-          prompt="$(sed "s/{YYYY-MM-DD}/$target_date/" prompts/daily-tool-updates.md)"
+          prompt="$(sed "s/{YYYY-MM-DD}/$TARGET_DATE/" prompts/daily-tool-updates.md)"
           copilot -p "$prompt" -s \
             --allow-tool='shell(*)' \
             --allow-tool='web_fetch(*)'
 
       - name: Validate generated log
         run: |
-          target_date="$(TZ=Asia/Tokyo date -d 'yesterday' +%F)"
-          test -s "updates/daily/${target_date}.md"
+          report_path="updates/daily/${TARGET_DATE}.md"
+          test -s "$report_path" || {
+            echo "Missing or empty daily report: $report_path" >&2
+            find updates -maxdepth 3 -type f -print >&2
+            exit 1
+          }
           python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
 
       - name: Commit generated updates to data
