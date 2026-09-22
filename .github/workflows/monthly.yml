@@ -30,6 +30,16 @@ jobs:
       - name: Install GitHub Copilot CLI
         run: npm install --global @github/copilot
 
+      - name: Check previous weekly report
+        run: |
+          target_month="$(TZ=Asia/Tokyo date -d '1 month ago' +%Y-%m)"
+          target_week="$(TZ=Asia/Tokyo date -d "${target_month}-01 +1 month -1 day" +%G-W%V)"
+          report_path="updates/weekly/${target_week}.md"
+          test -s "$report_path" || {
+            echo "Missing weekly report: $report_path" >&2
+            exit 1
+          }
+
       - name: Generate monthly report
         run: |
           target_month="$(TZ=Asia/Tokyo date -d '1 month ago' +%Y-%m)"
