@@ -22,6 +22,9 @@ TOOLS = (
     "cursor",
     "antigravity-cli",
 )
+MAX_SUMMARY_LENGTH = 500
+MAX_IMPACT_LENGTH = 500
+MIN_SUMMARY_IMPACT_OVERLAP = 40
 SOURCE_TYPES = (
     "official-changelog",
     "official-release",
@@ -57,6 +60,52 @@ REQUIRED_FIELDS = {
 
 class LogError(ValueError):
     """Raised when the update log or command input is invalid."""
+
+
+def longest_common_substring(left: str, right: str) -> str:
+    """Return the longest exact, consecutive substring shared by two values."""
+    previous = [0] * (len(right) + 1)
+    longest = ""
+    for left_index, left_character in enumerate(left, start=1):
+        current = [0]
+        for right_index, right_character in enumerate(right, start=1):
+            if left_character == right_character:
+                length = previous[right_index - 1] + 1
+                current.append(length)
+                if length > len(longest):
+                    longest = left[left_index - length : left_index]
+            else:
+                current.append(0)
+        previous = current
+    return longest
+
+
+def validate_text_fields(summary: Any, impact: Any) -> None:
+    if not isinstance(summary, str):
+        raise LogError("summary must be a string")
+    if not isinstance(impact, str):
+        raise LogError("impact must be a string")
+
+    summary = summary.strip()
+    impact = impact.strip()
+    if not summary:
+        raise LogError("summary cannot be empty")
+    if not impact:
+        raise LogError("impact cannot be empty")
+    if len(summary) > MAX_SUMMARY_LENGTH:
+        raise LogError(
+            f"summary cannot exceed {MAX_SUMMARY_LENGTH} characters"
+        )
+    if len(impact) > MAX_IMPACT_LENGTH:
+        raise LogError(f"impact cannot exceed {MAX_IMPACT_LENGTH} characters")
+
+    overlap = longest_common_substring(summary, impact)
+    if len(overlap) >= MIN_SUMMARY_IMPACT_OVERLAP:
+        raise LogError(
+            "summary and impact share a consecutive phrase of at least "
+            f"{MIN_SUMMARY_IMPACT_OVERLAP} characters; rewrite the summary "
+            "and inference separately"
+        )
 
 
 def parse_iso_date(value: str, field_name: str) -> date:
@@ -105,7 +154,7 @@ def canonicalize_url(value: str) -> str:
     )
 
 
-def load_log(path: Path) -> list[dict[str, Any]]:
+def load_log(path: Path, *, validate_text: bool = False) -> list[dict[str, Any]]:
     if not path.exists():
         return []
 
@@ -143,6 +192,8 @@ def load_log(path: Path) -> list[dict[str, Any]]:
         parse_iso_date(str(item["published_date"]), "published_date")
         parse_iso_date(str(item["discovered_date"]), "discovered_date")
         canonicalize_url(str(item["url"]))
+        if validate_text:
+            validate_text_fields(item["summary"], item["impact"])
         items.append(item)
     return items
 
@@ -201,10 +252,7 @@ def command_add(args: argparse.Namespace) -> int:
     discovered_date = parse_iso_date(args.discovered_date, "discovered_date")
     if discovered_date < published_date:
         raise LogError("discovered_date cannot be earlier than published_date")
-    if not args.summary.strip():
-        raise LogError("summary cannot be empty")
-    if not args.impact.strip():
-        raise LogError("impact cannot be empty")
+    validate_text_fields(args.summary, args.impact)
 
     items = load_log(args.log)
     duplicate = find_duplicate(items, args.tool, args.title, args.url)
@@ -268,6 +316,12 @@ def command_list(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_validate(args: argparse.Namespace) -> int:
+    items = load_log(args.log, validate_text=True)
+    print(f"VALID\t{len(items)}")
+    return 0
+
+
 def add_common_candidate_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--tool", choices=TOOLS, required=True)
@@ -301,6 +355,12 @@ def build_parser() -> argparse.ArgumentParser:
     list_parser.add_argument("--tool", choices=TOOLS)
     list_parser.add_argument("--format", choices=("jsonl", "markdown"), default="jsonl")
     list_parser.set_defaults(handler=command_list)
+
+    validate_parser = subparsers.add_parser(
+        "validate", help="Validate the complete update log"
+    )
+    validate_parser.add_argument("--log", type=Path, required=True)
+    validate_parser.set_defaults(handler=command_validate)
     return parser
 
 

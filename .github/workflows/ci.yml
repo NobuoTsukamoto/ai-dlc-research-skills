@@ -39,3 +39,6 @@ jobs:
 
       - name: Run coding-agent update tests
         run: uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
+
+      - name: Validate generated update log
+        run: uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl

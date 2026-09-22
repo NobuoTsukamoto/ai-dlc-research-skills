@@ -32,7 +32,7 @@ generated_at: YYYY-MM-DDTHH:MM:SS+09:00
 - 公開日: YYYY-MM-DD
 - バージョン / 提供段階: version / stable | preview | experimental
 - 重要度: high | medium
-- 公式事実: 確認できた変更内容
+- 変更内容（要約）: 確認できた変更内容を自分の言葉で要約
 - 制約: 対象プラン、OS、地域、段階的展開など。なければ「明記なし」
 - 実務への影響（推論）: 変更が利用者やチームへ与える意味
 
@@ -78,7 +78,7 @@ generated_at: YYYY-MM-DDTHH:MM:SS+09:00
 
 ### Tool name
 
-- 主要変更: 公式事実の統合要約
+- 主要変更: 変更内容（要約）の統合
 - 流れ: 複数更新を横断した整理
 - 実務への影響（推論）: 判断や試行につながる示唆
 - 公式ソース: [タイトル](URL)
@@ -87,7 +87,7 @@ generated_at: YYYY-MM-DDTHH:MM:SS+09:00
 
 ### [話題](official anchor URL)
 
-- 公式事実: 対象更新の内容
+- 変更内容（要約）: 対象更新の内容を自分の言葉で要約
 - 観測した反応: 媒体、投稿日、観測日時、反応数または具体的シグナル
 - 判定: confirmed | emerging
 - 注目された理由（推論）: 反応と機能の関係
@@ -133,7 +133,7 @@ generated_at: YYYY-MM-DDTHH:MM:SS+09:00
 ### テーマ
 
 - 対象ツール: Tool A, Tool B
-- 公式事実: 月内の変更
+- 変更内容（要約）: 月内の変更を自分の言葉で要約
 - 変化の方向: 前月または月初との比較
 - 実務への影響（推論）: 導入、運用、ガバナンスへの意味
 - 公式ソース: [source](URL)
@@ -150,7 +150,7 @@ generated_at: YYYY-MM-DDTHH:MM:SS+09:00
 
 ## 対象外の有望ツール
 
-| ツール | 公式URL | 何が有望か（公式事実） | 有望性の根拠（推論） | 成熟度 | 次の確認 |
+| ツール | 公式URL | 何が有望か（要約） | 有望性の根拠（推論） | 成熟度 | 次の確認 |
 |---|---|---|---|---|---|
 | Tool | URL | Facts | Inference | stable / preview / experimental | Watch item |
 

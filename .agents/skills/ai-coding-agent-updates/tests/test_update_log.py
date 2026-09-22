@@ -169,6 +169,136 @@ class UpdateLogTests(unittest.TestCase):
         self.assertEqual(exit_code, 2)
         self.assertIn("summary cannot be empty", stderr.getvalue())
 
+    def test_rejects_summary_over_maximum_length(self):
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            exit_code = self.add(summary="あ" * (update_log.MAX_SUMMARY_LENGTH + 1))
+        self.assertEqual(exit_code, 2)
+        self.assertIn("summary cannot exceed", stderr.getvalue())
+
+    def test_accepts_summary_at_maximum_length(self):
+        self.assertEqual(
+            self.add(summary="あ" * update_log.MAX_SUMMARY_LENGTH), 0
+        )
+
+    def test_rejects_impact_over_maximum_length(self):
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            exit_code = self.add(impact="あ" * (update_log.MAX_IMPACT_LENGTH + 1))
+        self.assertEqual(exit_code, 2)
+        self.assertIn("impact cannot exceed", stderr.getvalue())
+
+    def test_accepts_impact_at_maximum_length(self):
+        self.assertEqual(self.add(impact="あ" * update_log.MAX_IMPACT_LENGTH), 0)
+
+    def test_rejects_long_consecutive_match_between_summary_and_impact(self):
+        copied_phrase = (
+            "同じ公式文をそのまま繰り返した長い表現が含まれています。"
+            "この文章は独立した推論ではありません。"
+        )
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            exit_code = self.add(
+                summary=f"変更内容: {copied_phrase}",
+                impact=f"影響: {copied_phrase}",
+            )
+        self.assertEqual(exit_code, 2)
+        self.assertIn("consecutive phrase", stderr.getvalue())
+
+    def test_rejects_exactly_40_character_consecutive_match(self):
+        phrase = "x" * update_log.MIN_SUMMARY_IMPACT_OVERLAP
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            exit_code = self.add(summary=phrase, impact=phrase)
+        self.assertEqual(exit_code, 2)
+        self.assertIn("consecutive phrase", stderr.getvalue())
+
+    def test_check_accepts_legacy_text_that_validate_rejects(self):
+        self.log.write_text(
+            '{"schema_version": 1, "id": "legacy", "tool": "openai-codex", '
+            '"published_date": "2026-07-25", "discovered_date": "2026-07-26", '
+            '"title": "Legacy update", "url": "https://example.com/legacy", '
+            '"source_type": "official-changelog", "release_stage": "stable", '
+            '"importance": "medium", "summary": "' + "あ" * 501 + '", '
+            '"impact": "実務への影響"}\n',
+            encoding="utf-8",
+        )
+        exit_code, output = self.check(
+            tool="openai-codex",
+            title="Legacy update",
+            url="https://example.com/legacy",
+        )
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(output.startswith("DUPLICATE"))
+
+    def test_list_accepts_legacy_text_that_validate_rejects(self):
+        self.log.write_text(
+            '{"schema_version": 1, "id": "legacy", "tool": "openai-codex", '
+            '"published_date": "2026-07-25", "discovered_date": "2026-07-26", '
+            '"title": "Legacy update", "url": "https://example.com/legacy", '
+            '"source_type": "official-changelog", "release_stage": "stable", '
+            '"importance": "medium", "summary": "' + "あ" * 501 + '", '
+            '"impact": "実務への影響"}\n',
+            encoding="utf-8",
+        )
+        stdout = io.StringIO()
+        with redirect_stdout(stdout):
+            exit_code = update_log.main(
+                [
+                    "list",
+                    "--log",
+                    str(self.log),
+                    "--from-date",
+                    "2026-07-01",
+                    "--to-date",
+                    "2026-07-31",
+                    "--format",
+                    "markdown",
+                ]
+            )
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Legacy update", stdout.getvalue())
+
+    def test_add_accepts_legacy_text_that_validate_rejects(self):
+        self.log.write_text(
+            '{"schema_version": 1, "id": "legacy", "tool": "openai-codex", '
+            '"published_date": "2026-07-25", "discovered_date": "2026-07-26", '
+            '"title": "Legacy update", "url": "https://example.com/legacy", '
+            '"source_type": "official-changelog", "release_stage": "stable", '
+            '"importance": "medium", "summary": "' + "あ" * 501 + '", '
+            '"impact": "実務への影響"}\n',
+            encoding="utf-8",
+        )
+        self.assertEqual(
+            self.add(title="New update", url="https://example.com/new"), 0
+        )
+
+    def test_validate_checks_existing_items(self):
+        self.log.write_text(
+            '{"schema_version": 1, "id": "bad", "tool": "openai-codex", '
+            '"published_date": "2026-07-25", "discovered_date": "2026-07-26", '
+            '"title": "Update", "url": "https://example.com/update", '
+            '"source_type": "official-changelog", "release_stage": "stable", '
+            '"importance": "medium", "summary": "' + "あ" * 501 + '", '
+            '"impact": "実務への影響"}\n',
+            encoding="utf-8",
+        )
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            exit_code = update_log.main(
+                ["validate", "--log", str(self.log)]
+            )
+        self.assertEqual(exit_code, 2)
+        self.assertIn("summary cannot exceed", stderr.getvalue())
+
+    def test_validate_reports_valid_log(self):
+        self.add()
+        stdout = io.StringIO()
+        with redirect_stdout(stdout):
+            exit_code = update_log.main(["validate", "--log", str(self.log)])
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(stdout.getvalue().strip(), "VALID\t1")
+
 
 if __name__ == "__main__":
     unittest.main()
