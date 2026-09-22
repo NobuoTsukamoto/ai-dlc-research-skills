@@ -100,6 +100,14 @@ GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行しま�
 `data` への生成物pushはCIの対象外です。Copilot CLI、ログ検証、pushのいずれかが
 失敗した場合、GitHub Actionsの実行は失敗として表示されます。
 
+`.github/workflows/daily-dry-run.yml` は日次更新CIの手動dry-runです。既定の
+`live_fetch=false` はCopilotへのリクエストを送らず、固定したCLIバージョン、モデル、
+URL許可設定だけを検証するため、AI Creditsを消費しません。`live_fetch=true` は
+`gpt-5.4-nano` で実際のWebフェッチとレポート検証を行い、結果を7日間のArtifactとして
+保存します。`data` ブランチへのcommitやpushは行いません。2026-06-01以降の
+[usage-based billing](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing)
+では0円の選択可能モデルはないため、実フェッチ確認ではAI Creditsを消費します。
+
 ## 注意
 
 Web検索や外部サイトへのアクセス可否は、実行ホストと権限設定に依存します。検索が使えない場合も、ローカルPDFや候補一覧の評価には利用できます。
