@@ -103,7 +103,7 @@ GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行しま�
 `.github/workflows/daily-dry-run.yml` は日次更新CIの手動dry-runです。既定の
 `live_fetch=false` はCopilotへのリクエストを送らず、固定したCLIバージョン、モデル、
 URL許可設定だけを検証するため、AI Creditsを消費しません。`live_fetch=true` は
-`gpt-5.4-nano` で実際のWebフェッチとレポート検証を行い、結果を7日間のArtifactとして
+選択可能な低コストモデル`gpt-5.6-luna`で実際のWebフェッチとレポート検証を行い、結果を7日間のArtifactとして
 保存します。`data` ブランチへのcommitやpushは行いません。2026-06-01以降の
 [usage-based billing](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing)
 では0円の選択可能モデルはないため、実フェッチ確認ではAI Creditsを消費します。
