@@ -46,9 +46,9 @@ jobs:
           target_month="$(TZ=Asia/Tokyo date -d '1 month ago' +%Y-%m)"
           prompt="$(sed "s/{YYYY-MM}/$target_month/" prompts/monthly-tool-updates.md)"
           copilot -p "$prompt" -s \
-            --allow-tool='shell(*)' \
+            --allow-tool='shell' \
             --allow-tool='write' \
-            --allow-tool='web_fetch(*)'
+            --allow-tool='web_fetch'
 
       - name: Validate generated log
         run: python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl

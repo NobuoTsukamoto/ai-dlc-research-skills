@@ -36,9 +36,9 @@ jobs:
           target_week="$(TZ=Asia/Tokyo date -d '7 days ago' +%G-W%V)"
           prompt="$(sed "s/{YYYY-Www}/$target_week/" prompts/weekly-tool-updates.md)"
           copilot -p "$prompt" -s \
-            --allow-tool='shell(*)' \
+            --allow-tool='shell' \
             --allow-tool='write' \
-            --allow-tool='web_fetch(*)'
+            --allow-tool='web_fetch'
 
       - name: Validate generated log
         run: |
