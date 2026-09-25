@@ -1,6 +1,7 @@
 # AIコーディングエージェント 日次更新
 
 `ai-coding-agent-updates` スキルを使用してください。
+日本語の文章表現には `japanese-tech-writing` スキルも使用してください。ただし、簡潔さ、レポートのテンプレート、事実と推論の区別を優先してください。
 
 Asia/Tokyoの `{YYYY-MM-DD}` を対象に、対象ツールのprimary sourceをすべて確認してください。
 
