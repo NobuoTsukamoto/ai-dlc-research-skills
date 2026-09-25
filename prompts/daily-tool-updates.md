@@ -10,6 +10,7 @@ Asia/Tokyoの `{YYYY-MM-DD}` を対象に、対象ツールのprimary sourceを�
 - 引用は短い語句（目安40文字以内）に限定し、引用符とcanonical URLを付ける
 - 変更内容の要約と実務への影響（推論）を分ける
 - 更新なしと確認不能を分ける
+- Cursorは公式RSSの`pubDate`をAsia/Tokyoへ変換して対象日を判定し、候補があれば個別Changelog本文を確認する
 - dailyテンプレートでレポートを `updates/daily/{YYYY-MM-DD}.md` に保存する
 - 新規項目を `updates/update-log.jsonl` へ追加する
 

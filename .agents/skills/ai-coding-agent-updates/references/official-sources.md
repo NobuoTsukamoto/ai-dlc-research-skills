@@ -101,6 +101,7 @@ CHANGELOGの細かな修正はまとめてよいが、セキュリティ、権�
 
 ### primary
 
+- Changelog RSS feed: https://cursor.com/changelog/rss.xml
 - Official changelog: https://cursor.com/changelog
 
 ### secondary
@@ -108,7 +109,7 @@ CHANGELOGの細かな修正はまとめてよいが、セキュリティ、権�
 - Cursor documentation: https://docs.cursor.com/
 - Cursor blog: https://cursor.com/blog
 
-公式RSSが利用不能な場合はChangelogページを直接確認する。Forum投稿はCursor社員の発言であっても、製品仕様のprimary sourceにはしない。
+日次調査ではRSSの各`item`にある`pubDate`をAsia/Tokyoへ変換して対象日を判定し、`link`をcanonical URLとして使う。対象日の項目があれば個別Changelogページを開いて本文と提供条件を確認する。RSSを取得でき、対象日の`pubDate`がなければ「更新なし」と判定できる。RSSが取得不能な場合はChangelogページの日付表示を代替経路として確認し、両方を確認できない場合だけ「確認不能」とする。Forum投稿はCursor社員の発言であっても、製品仕様のprimary sourceにはしない。
 
 ## Google Antigravity CLI
 
