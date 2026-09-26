@@ -6,6 +6,7 @@ AI-DLCの論文調査と、AIコーディングエージェントの公式アッ
 
 - `ai-dlc-research`: 論文・産業調査の探索、評価、精読、月次統合
 - `ai-coding-agent-updates`: GitHub Copilot、Copilot CLI/app、Codex、Claude Code、Cursor、Antigravity CLIの公式更新を日次・週次・月次で整理
+- `japanese-tech-writing`: 日本語の技術文書の執筆・推敲規範（[k16shikanoのpublic Gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)、Unlicense）
 
 ## 構成
 
@@ -18,7 +19,8 @@ AI-DLCの論文調査と、AIコーディングエージェントの公式アッ
 │   └── workflows/ci.yml
 ├── .agents/skills/
 │   ├── ai-dlc-research/
-│   └── ai-coding-agent-updates/
+│   ├── ai-coding-agent-updates/
+│   └── japanese-tech-writing/
 ├── research/
 │   ├── research-policy.md
 │   └── reading-log.md
@@ -97,13 +99,14 @@ GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行しま�
 更新ログのコマンド例を実行する場合は、先に `git switch data` で `data` ブランチを
 チェックアウトしてください。各ワークフローはUTC 00:00（JST 09:00）を基準に実行され、
 `workflow_dispatch` でも起動できます。
+既定モデルは `gemini-3.8-flash` です。Repository variable `COPILOT_MODEL` を設定すると、3種類のレポートでモデルを上書きできます。
 `data` への生成物pushはCIの対象外です。Copilot CLI、ログ検証、pushのいずれかが
 失敗した場合、GitHub Actionsの実行は失敗として表示されます。
 
 `.github/workflows/daily-dry-run.yml` は日次更新CIの手動dry-runです。既定の
 `live_fetch=false` はCopilotへのリクエストを送らず、固定したCLIバージョン、モデル、
 URL許可設定だけを検証するため、AI Creditsを消費しません。`live_fetch=true` は
-選択可能な低コストモデル`gpt-5.6-luna`で実際のWebフェッチとレポート検証を行い、結果を7日間のArtifactとして
+選択可能なモデル`gemini-3.8-flash`で実際のWebフェッチとレポート検証を行い、結果を7日間のArtifactとして
 保存します。`data` ブランチへのcommitやpushは行いません。2026-06-01以降の
 [usage-based billing](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing)
 では0円の選択可能モデルはないため、実フェッチ確認ではAI Creditsを消費します。
