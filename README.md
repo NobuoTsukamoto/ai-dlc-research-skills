@@ -90,7 +90,8 @@ uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "t
 uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
 ```
 
-GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行します。
+GitHub Actionsでも、Ubuntu上で同じ検証を実行します（Windows固有の機能は使用していないため、
+CIは`ubuntu-latest`のみで実行します）。
 
 ## 自動更新
 
