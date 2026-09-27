@@ -30,11 +30,15 @@ class DryRunWorkflowTests(unittest.TestCase):
             raise AssertionError(f"Missing workflow env value: {name}")
         return match.group(1).strip('"')
 
-    def test_is_manual_and_read_only_by_default(self) -> None:
-        self.assertIn("on:\n  workflow_dispatch:", self.text)
+    def test_runs_manually_and_for_same_repository_prs(self) -> None:
+        self.assertIn("workflow_dispatch:", self.text)
         self.assertNotIn("\n  schedule:", self.text)
         self.assertNotIn("\n  push:", self.text)
-        self.assertNotIn("\n  pull_request:", self.text)
+        self.assertIn("on:\n  pull_request:", self.text)
+        self.assertIn(
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            self.text,
+        )
         self.assertRegex(
             self.text,
             r"live_fetch:\n(?: {8}.+\n)* {8}default: false",
@@ -62,7 +66,32 @@ class DryRunWorkflowTests(unittest.TestCase):
     def test_live_result_is_validated_and_uploaded(self) -> None:
         self.assertIn("update_log.py validate", self.text)
         self.assertIn("permission denied", self.text)
+        self.assertIn("dry-run-artifact/validation.txt", self.text)
+        self.assertIn("dry-run-artifact/run-summary.txt", self.text)
+        self.assertIn("steps.validate_report.outcome", self.text)
         self.assertIn("actions/upload-artifact@v4", self.text)
+
+    def test_pr_run_compares_same_date_without_failing_on_report_diffs(self) -> None:
+        self.assertIn(
+            "if: inputs.live_fetch || github.event_name == 'pull_request'",
+            self.text,
+        )
+        self.assertIn('baseline_path="updates/daily/${TARGET_DATE}.md"', self.text)
+        self.assertIn("baseline-${TARGET_DATE}.md", self.text)
+        self.assertIn("diff -u", self.text)
+        self.assertIn('elif [[ "$diff_status" -eq 1 ]]', self.text)
+        self.assertIn(
+            'echo "Pull request dry run will use Copilot and consume AI credits."',
+            self.text,
+        )
+        self.assertIn(
+            "textual differences are for human review and do not fail this check.",
+            self.text,
+        )
+        self.assertIn(
+            "Comparison unavailable: no existing data-branch report for ${TARGET_DATE}.",
+            self.text,
+        )
 
 
 if __name__ == "__main__":
