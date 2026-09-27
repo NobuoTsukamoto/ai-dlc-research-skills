@@ -104,11 +104,15 @@ CIは`ubuntu-latest`のみで実行します）。
 `data` への生成物pushはCIの対象外です。Copilot CLI、ログ検証、pushのいずれかが
 失敗した場合、GitHub Actionsの実行は失敗として表示されます。
 
-`.github/workflows/daily-dry-run.yml` は日次更新CIの手動dry-runです。既定の
-`live_fetch=false` はCopilotへのリクエストを送らず、固定したCLIバージョン、モデル、
-URL許可設定だけを検証するため、AI Creditsを消費しません。`live_fetch=true` は
-選択可能なモデル`gemini-3.8-flash`で実際のWebフェッチとレポート検証を行い、結果を7日間のArtifactとして
-保存します。`data` ブランチへのcommitやpushは行いません。2026-06-01以降の
+`.github/workflows/daily-dry-run.yml` は日次更新の手動dry-runに加え、同一リポジトリ内のPRでも
+自動実行します（forkからのPRは対象外）。PR実行と手動実行の`live_fetch=true`はCopilotへの
+リクエストを伴うため、AI Creditsを消費します。既定の`live_fetch=false`はCopilotへの
+リクエストを送らず、固定したCLIバージョン、モデル、URL許可設定だけを検証します。
+実行では対象日と同じ`data`ブランチのレポートがあれば差分を作り、基準レポート、生成レポート、
+差分、決定的な検証結果を7日間のArtifactに保存します。差分は人が確認するための情報であり、
+テキストの違いだけではPRチェックは失敗しません。同じ対象日の基準レポートがない場合も、
+比較できないことをArtifactに記録し、PRチェックは失敗させません。レポートや更新ログの検証失敗は
+引き続きチェックを失敗させます。`data`ブランチへのcommitやpushは行いません。2026-06-01以降の
 [usage-based billing](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing)
 では0円の選択可能モデルはないため、実フェッチ確認ではAI Creditsを消費します。
 

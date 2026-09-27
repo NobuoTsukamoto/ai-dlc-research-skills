@@ -1,6 +1,8 @@
 name: Daily coding-agent updates dry run
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       target_date:
@@ -28,6 +30,9 @@ env:
 
 jobs:
   dry-run:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ github.token }}
@@ -57,22 +62,39 @@ jobs:
         run: npm install --global "@github/copilot@${COPILOT_CLI_VERSION}"
 
       - name: Validate Copilot CLI configuration
+        env:
+          RUN_EVENT: ${{ github.event_name }}
+          LIVE_FETCH: ${{ inputs.live_fetch }}
         run: |
           copilot --version
           copilot --help | grep -F -- '--allow-url'
           copilot --help | grep -F -- '--model'
           echo "Model: $COPILOT_MODEL"
           echo "Allowed URLs: $COPILOT_ALLOWED_URLS"
-          if [[ "${{ inputs.live_fetch }}" != "true" ]]; then
+          if [[ "$RUN_EVENT" == "pull_request" ]]; then
+            echo "Pull request dry run will use Copilot and consume AI credits."
+          elif [[ "$LIVE_FETCH" != "true" ]]; then
             echo "Configuration-only dry run complete; no AI credits were consumed."
           fi
 
       - name: Prepare data branch snapshot
-        if: inputs.live_fetch
+        id: prepare_data
+        if: inputs.live_fetch || github.event_name == 'pull_request'
         run: python .github/scripts/data_branch.py prepare
 
+      - name: Capture same-date baseline
+        id: capture_baseline
+        if: inputs.live_fetch || github.event_name == 'pull_request'
+        run: |
+          mkdir -p dry-run-artifact
+          baseline_path="updates/daily/${TARGET_DATE}.md"
+          if [[ -s "$baseline_path" ]]; then
+            cp "$baseline_path" "dry-run-artifact/baseline-${TARGET_DATE}.md"
+          fi
+
       - name: Generate daily report without publishing
-        if: inputs.live_fetch
+        id: generate_report
+        if: inputs.live_fetch || github.event_name == 'pull_request'
         run: |
           set -o pipefail
           prompt="$(sed "s/{YYYY-MM-DD}/$TARGET_DATE/" prompts/daily-tool-updates.md)"
@@ -86,31 +108,103 @@ jobs:
             | tee copilot-dry-run-output.txt
 
       - name: Validate generated result
-        if: inputs.live_fetch
+        id: validate_report
+        if: inputs.live_fetch || github.event_name == 'pull_request'
         run: |
           report_path="updates/daily/${TARGET_DATE}.md"
-          test -s "$report_path" || {
-            echo "Missing or empty daily report: $report_path" >&2
+          validation_path="dry-run-artifact/validation.txt"
+          validation_failed=0
+          if [[ -s "$report_path" ]]; then
+            echo "Daily report exists and is non-empty: PASS" >> "$validation_path"
+          else
+            echo "Daily report is missing or empty: $report_path" >> "$validation_path"
             find updates -maxdepth 3 -type f -print >&2
-            exit 1
-          }
-          python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
-          if grep -Eiq 'permission denied|could not request permission|web.?fetch.*(権限拒否|取得不能)' "$report_path" copilot-dry-run-output.txt; then
-            echo "Copilot reported a web access permission failure." >&2
-            exit 1
+            validation_failed=1
           fi
+          if python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl >> "$validation_path" 2>&1; then
+            echo "Update log validation: PASS" >> "$validation_path"
+          else
+            echo "Update log validation: FAIL" >> "$validation_path"
+            validation_failed=1
+          fi
+          permission_files=()
+          for path in "$report_path" copilot-dry-run-output.txt; do
+            [[ ! -f "$path" ]] || permission_files+=("$path")
+          done
+          if (( ${#permission_files[@]} > 0 )) && grep -Eiq 'permission denied|could not request permission|web.?fetch.*(権限拒否|取得不能)' "${permission_files[@]}"; then
+            echo "Copilot reported a web access permission failure." >&2
+            echo "Copilot web access permission check: FAIL" >> "$validation_path"
+            validation_failed=1
+          else
+            echo "Copilot web access permission check: PASS" >> "$validation_path"
+          fi
+          cat "$validation_path"
+          exit "$validation_failed"
+
+      - name: Compare with same-date baseline
+        id: compare_report
+        if: ${{ (inputs.live_fetch || github.event_name == 'pull_request') && always() }}
+        run: |
+          mkdir -p dry-run-artifact
+          baseline_path="dry-run-artifact/baseline-${TARGET_DATE}.md"
+          report_path="updates/daily/${TARGET_DATE}.md"
+          comparison_path="dry-run-artifact/comparison.diff"
+          status_path="dry-run-artifact/comparison-status.txt"
+          if [[ ! -s "$baseline_path" ]]; then
+            echo "Comparison unavailable: no existing data-branch report for ${TARGET_DATE}." > "$status_path"
+            echo "No same-date baseline is available." > "$comparison_path"
+          elif [[ ! -s "$report_path" ]]; then
+            echo "Comparison unavailable: generated report for ${TARGET_DATE} is missing or empty." > "$status_path"
+            echo "Generated report is missing or empty." > "$comparison_path"
+          else
+            set +e
+            diff -u \
+              --label "data/updates/daily/${TARGET_DATE}.md" "$baseline_path" \
+              --label "PR/updates/daily/${TARGET_DATE}.md" "$report_path" \
+              > "$comparison_path"
+            diff_status=$?
+            set -e
+            if [[ "$diff_status" -eq 0 ]]; then
+              echo "Compared against the existing data-branch report for ${TARGET_DATE}; no textual differences." > "$status_path"
+            elif [[ "$diff_status" -eq 1 ]]; then
+              echo "Compared against the existing data-branch report for ${TARGET_DATE}; textual differences are for human review and do not fail this check." > "$status_path"
+            else
+              echo "Unable to compare reports (diff exit code ${diff_status})." > "$status_path"
+              exit "$diff_status"
+            fi
+          fi
+          cat "$status_path"
+
+      - name: Record dry-run outcomes
+        if: ${{ (inputs.live_fetch || github.event_name == 'pull_request') && always() }}
+        env:
+          PREPARE_RESULT: ${{ steps.prepare_data.outcome }}
+          BASELINE_RESULT: ${{ steps.capture_baseline.outcome }}
+          GENERATE_RESULT: ${{ steps.generate_report.outcome }}
+          VALIDATE_RESULT: ${{ steps.validate_report.outcome }}
+          COMPARE_RESULT: ${{ steps.compare_report.outcome }}
+        run: |
+          mkdir -p dry-run-artifact
+          {
+            echo "Target date: ${TARGET_DATE:-unknown}"
+            echo "Prepare data branch: ${PREPARE_RESULT:-skipped}"
+            echo "Capture same-date baseline: ${BASELINE_RESULT:-skipped}"
+            echo "Generate report: ${GENERATE_RESULT:-skipped}"
+            echo "Validate report and update log: ${VALIDATE_RESULT:-skipped}"
+            echo "Compare reports: ${COMPARE_RESULT:-skipped}"
+          } > dry-run-artifact/run-summary.txt
 
       - name: Collect dry-run artifact
-        if: inputs.live_fetch && always()
+        if: ${{ (inputs.live_fetch || github.event_name == 'pull_request') && always() }}
         run: |
           mkdir -p dry-run-artifact
           report_path="updates/daily/${TARGET_DATE}.md"
-          [[ ! -f "$report_path" ]] || cp "$report_path" dry-run-artifact/
+          [[ ! -f "$report_path" ]] || cp "$report_path" "dry-run-artifact/${TARGET_DATE}.md"
           [[ ! -f updates/update-log.jsonl ]] || cp updates/update-log.jsonl dry-run-artifact/
           [[ ! -f copilot-dry-run-output.txt ]] || cp copilot-dry-run-output.txt dry-run-artifact/
 
       - name: Upload dry-run result
-        if: inputs.live_fetch && always()
+        if: ${{ (inputs.live_fetch || github.event_name == 'pull_request') && always() }}
         uses: actions/upload-artifact@v4
         with:
           name: daily-updates-dry-run-${{ env.TARGET_DATE }}
