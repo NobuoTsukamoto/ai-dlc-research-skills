@@ -14,14 +14,14 @@ REPORT_PROMPTS = (
 
 
 class ReportConfigurationTests(unittest.TestCase):
-    def test_report_workflows_default_to_gemini_and_keep_override(self) -> None:
+    def test_report_workflows_default_to_luna_and_keep_override(self) -> None:
         for workflow_name in REPORT_WORKFLOWS:
             with self.subTest(workflow=workflow_name):
                 text = (
                     ROOT / ".github" / "workflows" / workflow_name
                 ).read_text(encoding="utf-8")
                 self.assertIn(
-                    "COPILOT_MODEL: ${{ vars.COPILOT_MODEL || 'gemini-3.8-flash' }}",
+                    "COPILOT_MODEL: ${{ vars.COPILOT_MODEL || 'gpt-6-luna' }}",
                     text,
                 )
                 self.assertIn('--model="$COPILOT_MODEL"', text)

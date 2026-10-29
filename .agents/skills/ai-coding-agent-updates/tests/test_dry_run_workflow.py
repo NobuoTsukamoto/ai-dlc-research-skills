@@ -53,7 +53,7 @@ class DryRunWorkflowTests(unittest.TestCase):
 
     def test_model_and_url_permissions_are_pinned(self) -> None:
         self.assertEqual(self.env_value("COPILOT_CLI_VERSION"), "1.0.87")
-        self.assertEqual(self.env_value("COPILOT_MODEL"), "gemini-3.8-flash")
+        self.assertEqual(self.env_value("COPILOT_MODEL"), "gpt-6-luna")
         self.assertEqual(
             set(self.env_value("COPILOT_ALLOWED_URLS").split(",")),
             PRIMARY_DOMAINS,

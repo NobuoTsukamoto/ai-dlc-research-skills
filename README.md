@@ -60,6 +60,7 @@ uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
 # 付属テストの実行
 uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
 uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
+uv run python -m unittest discover -s .github/tests -p "test_*.py"
 
 # 読書ログの重複確認
 uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
@@ -100,9 +101,17 @@ CIは`ubuntu-latest`のみで実行します）。
 更新ログのコマンド例を実行する場合は、先に `git switch data` で `data` ブランチを
 チェックアウトしてください。各ワークフローはUTC 00:00（JST 09:00）を基準に実行され、
 `workflow_dispatch` でも起動できます。
-既定モデルは `gemini-3.8-flash` です。Repository variable `COPILOT_MODEL` を設定すると、3種類のレポートでモデルを上書きできます。
+既定モデルは日次・週次・月次・dry-runとも `gpt-6-luna` です。Repository variable `COPILOT_MODEL` を設定すると、日次・週次・月次のモデルを上書きできます。既存変数がある場合は既定値より優先されるため、運用切り替え時に変数も確認してください。dry-runは比較用に既定モデルを固定しています。
 `data` への生成物pushはCIの対象外です。Copilot CLI、ログ検証、pushのいずれかが
 失敗した場合、GitHub Actionsの実行は失敗として表示されます。
+
+各実行のCLI出力と利用統計は `copilot-usage-<mode>-<run_id>-<attempt>` Artifactに30日間保存します。失敗した実行も対象です。`usage/run.json` に処理区分、要求モデル、実行ID、再実行番号、終了状態を記録し、取得できたOpenTelemetryの呼び出し別統計から実際のモデルとトークン数を集計します。CLIが明示したAIクレジット値だけを記録し、取得できない値は `null` にします。CLIの統計表示と `usage/otel.jsonl` が元の証跡です。モデルやトークン数から請求額を推計して埋めることはしません。キャンセル等で終了処理に到達しなかった場合、開始時の状態が残ることがあります。
+
+日次とdry-runでは、LLM起動前に `.github/scripts/collect_updates.py` がレジストリの全primary sourceを取得します。RSS・Atomの日付をJSTへ変換し、保存済み本文ハッシュと既存ログのURLで候補を絞ります。`collection/candidates.json` に変更候補と全ソースの取得結果を記録し、LLMは必要な本文確認と取得失敗の補完を行います。取得不能を「更新なし」と扱いません。
+
+収集状態は日次レポートとログの検証成功後、`updates/collection-state.json` としてdataブランチへ保存します。次回以降は古い公開日の新規出現や本文修正も候補になります。初回より前の修正やfeedから消えた記事は検出を保証できないため、初回や長期停止後は公式ページで補完します。週次・月次は保存済みレポートの統合と追加調査を維持します。
+
+利用統計の仕様は [Copilot CLI公式リファレンス](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference) を参照してください。CLIのバージョンによって統計項目が異なる場合は、Artifactの原文を確認します。
 
 `.github/workflows/daily-dry-run.yml` は日次更新の手動dry-runに加え、同一リポジトリ内のPRでも
 自動実行します（forkからのPRは対象外）。PR実行と手動実行の`live_fetch=true`はCopilotへの

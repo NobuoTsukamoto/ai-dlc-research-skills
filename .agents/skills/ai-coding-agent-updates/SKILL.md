@@ -45,7 +45,7 @@ description: Track, verify, summarize, and persist official product updates for 
 ## daily
 
 1. 対象日と実行時刻をAsia/Tokyoで確定する。
-2. `references/official-sources.md` のprimary sourceを全対象ツールについて確認する。
+2. 自動実行で `collection/candidates.json` がある場合は、まず `references/collection.md` を読み、事前収集した候補とcoverageを使う。通常は `references/official-sources.md` のprimary sourceを全対象ツールについて確認する。
 3. 候補ごとに `update_log.py check` を実行する。
 4. 本文またはRelease本文を開き、タイトル、公開日、提供段階、変更内容、制約を確認する。
 5. 同一更新を統合し、重要度を付ける。
