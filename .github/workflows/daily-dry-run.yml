@@ -25,7 +25,7 @@ concurrency:
 
 env:
   COPILOT_CLI_VERSION: "1.0.87"
-  COPILOT_MODEL: gemini-3.8-flash
+  COPILOT_MODEL: gpt-6-luna
   COPILOT_ALLOWED_URLS: github.com,api.github.com,raw.githubusercontent.com,github.blog,learn.chatgpt.com,cursor.com,antigravity.google
 
 jobs:
@@ -92,13 +92,17 @@ jobs:
             cp "$baseline_path" "dry-run-artifact/baseline-${TARGET_DATE}.md"
           fi
 
+      - name: Collect and filter official sources
+        if: inputs.live_fetch || github.event_name == 'pull_request'
+        run: python .github/scripts/collect_updates.py --date "$TARGET_DATE"
+
       - name: Generate daily report without publishing
         id: generate_report
         if: inputs.live_fetch || github.event_name == 'pull_request'
         run: |
           set -o pipefail
           prompt="$(sed "s/{YYYY-MM-DD}/$TARGET_DATE/" prompts/daily-tool-updates.md)"
-          copilot -p "$prompt" -s \
+          python .github/scripts/run_copilot.py --mode dry-run -- copilot -p "$prompt" \
             --model="$COPILOT_MODEL" \
             --no-ask-user \
             --allow-tool='shell' \
@@ -106,6 +110,17 @@ jobs:
             --allow-tool='web_fetch' \
             --allow-url="$COPILOT_ALLOWED_URLS" \
             | tee copilot-dry-run-output.txt
+
+      - name: Preserve usage and collection evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: copilot-usage-dry-run-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            usage/
+            collection/
+          if-no-files-found: ignore
+          retention-days: 30
 
       - name: Validate generated result
         id: validate_report

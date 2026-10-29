@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  COPILOT_MODEL: ${{ vars.COPILOT_MODEL || 'gemini-3.8-flash' }}
+  COPILOT_MODEL: ${{ vars.COPILOT_MODEL || 'gpt-6-luna' }}
   COPILOT_ALLOWED_URLS: github.com,api.github.com,raw.githubusercontent.com,github.blog,learn.chatgpt.com,cursor.com,antigravity.google
 
 jobs:
@@ -39,12 +39,23 @@ jobs:
         run: |
           target_week="$(TZ=Asia/Tokyo date -d '7 days ago' +%G-W%V)"
           prompt="$(sed "s/{YYYY-Www}/$target_week/" prompts/weekly-tool-updates.md)"
-          copilot -p "$prompt" -s \
+          python .github/scripts/run_copilot.py --mode weekly -- copilot -p "$prompt" \
             --model="$COPILOT_MODEL" \
             --allow-tool='shell' \
             --allow-tool='write' \
             --allow-tool='web_fetch' \
             --allow-url="$COPILOT_ALLOWED_URLS"
+
+      - name: Preserve usage and collection evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: copilot-usage-weekly-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            usage/
+            collection/
+          if-no-files-found: ignore
+          retention-days: 30
 
       - name: Validate generated log
         run: |

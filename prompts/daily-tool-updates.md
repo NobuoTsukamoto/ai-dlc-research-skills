@@ -5,6 +5,8 @@
 
 Asia/Tokyoの `{YYYY-MM-DD}` を対象に、対象ツールのprimary sourceをすべて確認してください。
 
+`collection/candidates.json` がある場合は事前収集結果を使用し、スキルの `references/collection.md` に従ってください。成功したソースの全本文を再取得せず、候補の本文確認と取得失敗の補完に絞ってください。対象日の既存レポートの内容は維持してください。
+
 - 公式アップデートだけを製品事実として扱う
 - 新規候補は `update_log.py check` で重複確認する
 - 変更内容は自分の言葉で500文字以内に要約する
