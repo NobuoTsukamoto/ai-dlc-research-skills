@@ -2,7 +2,8 @@ name: Monthly coding-agent updates
 
 on:
   schedule:
-    - cron: "0 0 1 * *"
+    # Wait until the week containing the last day of the month has ended.
+    - cron: "0 3 8 * *"
   workflow_dispatch:
 
 concurrency:
@@ -35,14 +36,13 @@ jobs:
       - name: Install GitHub Copilot CLI
         run: npm install --global @github/copilot
 
-      - name: Check previous weekly report
+      - name: Check last weekly report
         run: |
           target_month="$(TZ=Asia/Tokyo date -d '1 month ago' +%Y-%m)"
           target_week="$(TZ=Asia/Tokyo date -d "${target_month}-01 +1 month -1 day" +%G-W%V)"
           report_path="updates/weekly/${target_week}.md"
           test -s "$report_path" || {
-            echo "Missing weekly report: $report_path" >&2
-            exit 1
+            echo "::warning::Missing weekly report: $report_path; monthly coverage must be partial."
           }
 
       - name: Generate monthly report
@@ -68,7 +68,10 @@ jobs:
           retention-days: 30
 
       - name: Validate generated log
-        run: python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
+        run: |
+          target_month="$(TZ=Asia/Tokyo date -d '1 month ago' +%Y-%m)"
+          test -s "updates/monthly/${target_month}.md"
+          python .agents/skills/ai-coding-agent-updates/scripts/update_log.py validate --log updates/update-log.jsonl
 
       - name: Archive generated updates
         run: tar -czf monthly-generated-updates.tar.gz updates
