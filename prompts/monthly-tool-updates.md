@@ -6,6 +6,7 @@
 Asia/Tokyoの `{YYYY-MM}` を対象に、保存済みweeklyを統合してください。
 
 - weeklyの存在週と欠落週を明記する
+- 対象月と重なるweeklyに欠落がある場合はcoverageをpartialとする
 - 月内のcanonical updateを確認して二重計上を避ける
 - 主要変化、共通トレンド、実務への影響を統合する
 - 対象外の有望なAIコーディングエージェントを公式情報で探索する
