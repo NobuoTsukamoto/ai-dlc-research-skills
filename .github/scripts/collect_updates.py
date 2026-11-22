@@ -26,9 +26,11 @@ def sources(text):
     tool = None
     primary = False
     ids = dict(zip(('GitHub Copilot', 'GitHub Copilot CLI', 'GitHub Copilot app',
-                    'OpenAI Codex', 'Claude Code', 'Cursor', 'Google Antigravity CLI'),
+                    'OpenAI Codex', 'Claude Code', 'Cursor', 'Google Antigravity CLI',
+                    'AWS Kiro'),
                    ('github-copilot', 'github-copilot-cli', 'github-copilot-app',
-                    'openai-codex', 'claude-code', 'cursor', 'antigravity-cli')))
+                    'openai-codex', 'claude-code', 'cursor', 'antigravity-cli',
+                    'aws-kiro')))
     for line in text.splitlines():
         if line.startswith('## '):
             primary = False
@@ -58,7 +60,7 @@ def plain(value):
 
 
 def entries(body, url):
-    if not (url.endswith('.atom') or url.endswith('.xml') or '/feed/' in url):
+    if not (url.endswith(('.atom', '.rss', '.xml')) or '/feed/' in url):
         content = plain(body)
         if len(content) < 100 or any(marker in content.casefold() for marker in
                 ('just a moment...', 'verify you are human', 'access denied')):

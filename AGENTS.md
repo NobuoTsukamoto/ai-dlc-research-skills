@@ -20,7 +20,7 @@
 次の依頼では `.agents/skills/ai-coding-agent-updates/SKILL.md` を使用してください。
 
 - GitHub Copilot、Copilot CLI、GitHub Copilot appの公式更新調査
-- Codex、Claude Code、Cursor、Antigravity CLIの公式更新調査
+- Codex、Claude Code、Cursor、Antigravity CLI、AWS Kiroの公式更新調査
 - AIコーディングエージェント更新の日次・週次・月次まとめ
 - 公式イベントの告知・日程変更の整理
 - 月次の対象外有望ツール探索

@@ -17,6 +17,7 @@ Asia/Tokyoの `{YYYY-MM-DD}` を対象に、対象ツールのprimary sourceを�
 - 変更内容の要約と実務への影響（推論）を分ける
 - 更新なしと確認不能を分ける
 - Cursorは公式RSSの`pubDate`をAsia/Tokyoへ変換して対象日を判定し、候補があれば個別Changelog本文を確認する
+- AWS Kiroは公式Changelog RSSの`pubDate`をAsia/Tokyoへ変換して対象日を判定し、`link`先のChangelog本文を確認する
 - dailyテンプレートでレポートを `updates/daily/{YYYY-MM-DD}.md` に保存する
 - 新規の製品更新を `updates/update-log.jsonl` へ追加する
 
