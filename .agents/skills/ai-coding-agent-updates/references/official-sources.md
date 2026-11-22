@@ -22,6 +22,7 @@
 | `claude-code` | Claude Code | CLI、IDE、web、GitHub連携、Agent SDKとの直接連携 |
 | `cursor` | Cursor | Editor、Agent、CLI、cloud agents、関連SDK |
 | `antigravity-cli` | Google Antigravity CLI | `agy` CLI。Antigravity IDE/SDKはCLIへ直接影響する場合だけ |
+| `aws-kiro` | AWS Kiro | IDE、CLI、web/cloud、VS Code extension、Kiro Crew |
 
 ## GitHub Copilot
 
@@ -126,6 +127,20 @@ CHANGELOGの細かな修正はまとめてよいが、セキュリティ、権�
 - Product site: https://antigravity.google/
 
 Google所有ドメインまたは`google-antigravity` Organizationを公式とする。コミュニティ運営の類似ドメインを公式情報源にしない。
+
+## AWS Kiro
+
+### primary
+
+- Changelog RSS feed: https://kiro.dev/changelog/feed.rss
+
+### secondary
+
+- Official changelog: https://kiro.dev/changelog/
+- Changelog Atom feed: https://kiro.dev/changelog/feed.atom
+- Product site: https://kiro.dev/
+
+日次調査ではRSSの各`item`にある`pubDate`をAsia/Tokyoへ変換して対象日を判定し、`link`をcanonical URLとして使う。対象日の項目があれば個別Changelogページで変更内容と提供条件を確認する。RSSが取得でき、対象日の項目がなければ「更新なし」と判定できる。RSSが取得不能の場合はChangelogページを代替経路として確認し、どちらも確認できない場合だけ「確認不能」とする。AWS公式KiroサイトとRSSに記載されたAWS著作権表示を公式性の根拠とする。
 
 ## source-type
 

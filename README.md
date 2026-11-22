@@ -5,7 +5,7 @@ AI-DLCの論文調査と、AIコーディングエージェントの公式アッ
 ## スキル
 
 - `ai-dlc-research`: 論文・産業調査の探索、評価、精読、月次統合
-- `ai-coding-agent-updates`: GitHub Copilot、Copilot CLI/app、Codex、Claude Code、Cursor、Antigravity CLIの公式更新を日次・週次・月次で整理
+- `ai-coding-agent-updates`: GitHub Copilot、Copilot CLI/app、Codex、Claude Code、Cursor、Antigravity CLI、AWS Kiroの公式更新を日次・週次・月次で整理
 - `japanese-tech-writing`: 日本語の技術文書の執筆・推敲規範（[k16shikanoのpublic Gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)、Unlicense）
 
 ## 構成

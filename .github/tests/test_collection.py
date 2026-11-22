@@ -84,8 +84,27 @@ class CollectionTests(unittest.TestCase):
     def test_registry_covers_every_primary(self):
         registry = (ROOT / '.agents/skills/ai-coding-agent-updates/references/official-sources.md').read_text('utf-8')
         sources = list(collector.sources(registry))
-        self.assertEqual(len(sources), 18)
-        self.assertEqual(len({tool for tool, _ in sources}), 7)
+        self.assertEqual(len(sources), 19)
+        self.assertEqual(len({tool for tool, _ in sources}), 8)
+        self.assertIn(
+            ('aws-kiro', 'https://kiro.dev/changelog/feed.rss'),
+            sources,
+        )
+
+    def test_kiro_rss_candidate_uses_aws_kiro_id(self):
+        registry = (
+            '## AWS Kiro\n### primary\n'
+            '- Changelog RSS feed: https://kiro.dev/changelog/feed.rss\n'
+        )
+        body = (
+            '<rss><channel><item><title>Kiro update</title>'
+            '<link>https://kiro.dev/changelog/test</link>'
+            '<pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>'
+            '<description>Release details</description></item></channel></rss>'
+        )
+        result, _ = collector.collect(registry, {}, '2026-11-20', lambda _: body)
+        self.assertEqual(result['candidates'][0]['tool'], 'aws-kiro')
+        self.assertEqual(result['candidates'][0]['published'], '2026-11-20')
 
     def test_runner_preserves_failure_and_usage_output(self):
         import json

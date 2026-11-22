@@ -1,6 +1,6 @@
 ---
 name: ai-coding-agent-updates
-description: Track, verify, summarize, and persist official product updates and event announcements for GitHub Copilot, GitHub Copilot CLI, GitHub Copilot app, OpenAI Codex, Claude Code, Cursor, and Google Antigravity CLI. Use for Japanese daily digests, weekly rollups, monthly rollups with promising-tool discovery, update-log duplicate checks, and source-registry audits. Do not use for general AI news or academic literature reviews.
+description: Track, verify, summarize, and persist official product updates and event announcements for GitHub Copilot, GitHub Copilot CLI, GitHub Copilot app, OpenAI Codex, Claude Code, Cursor, Google Antigravity CLI, and AWS Kiro. Use for Japanese daily digests, weekly rollups, monthly rollups with promising-tool discovery, update-log duplicate checks, and source-registry audits. Do not use for general AI news or academic literature reviews.
 ---
 
 # AIコーディングエージェント更新情報

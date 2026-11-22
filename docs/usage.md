@@ -33,7 +33,7 @@ Codex公式ドキュメントでサポートされる2つの流儀:
 $ai-coding-agent-updates
 
 昨日のGitHub Copilot、Copilot CLI、GitHub Copilot app、
-Codex、Claude Code、Cursor、Antigravity CLIの公式更新を確認し、
+Codex、Claude Code、Cursor、Antigravity CLI、AWS Kiroの公式更新を確認し、
 日次レポートへ保存してください。
 ```
 

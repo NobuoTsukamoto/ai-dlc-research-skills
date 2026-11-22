@@ -15,6 +15,7 @@ OFFICIAL_SOURCES = (
 )
 DAILY_PROMPT = ROOT / "prompts" / "daily-tool-updates.md"
 CURSOR_RSS_URL = "https://cursor.com/changelog/rss.xml"
+KIRO_RSS_URL = "https://kiro.dev/changelog/feed.rss"
 
 
 class OfficialSourcesTests(unittest.TestCase):
@@ -31,6 +32,17 @@ class OfficialSourcesTests(unittest.TestCase):
 
         self.assertIn("Cursorは公式RSS", text)
         self.assertIn("`pubDate`をAsia/Tokyoへ変換", text)
+
+    def test_kiro_rss_is_registered_with_date_guidance(self) -> None:
+        text = OFFICIAL_SOURCES.read_text(encoding="utf-8")
+        daily_prompt = DAILY_PROMPT.read_text(encoding="utf-8")
+
+        self.assertIn("| `aws-kiro` | AWS Kiro |", text)
+        self.assertIn(KIRO_RSS_URL, text)
+        self.assertIn("AWS公式Kiroサイト", text)
+        self.assertIn("`pubDate`をAsia/Tokyoへ変換", text)
+        self.assertIn("`link`をcanonical URL", text)
+        self.assertIn("AWS Kiroは公式Changelog RSS", daily_prompt)
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ TOOLS = (
     "claude-code",
     "cursor",
     "antigravity-cli",
+    "aws-kiro",
 )
 MAX_SUMMARY_LENGTH = 500
 MAX_IMPACT_LENGTH = 500
