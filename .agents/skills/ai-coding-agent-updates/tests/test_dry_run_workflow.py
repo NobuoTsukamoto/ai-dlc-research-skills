@@ -15,6 +15,7 @@ PRIMARY_DOMAINS = {
     "learn.chatgpt.com",
     "cursor.com",
     "antigravity.google",
+    "kiro.dev",
 }
 
 
