@@ -1,6 +1,6 @@
 ---
 name: ai-coding-agent-updates
-description: Track, verify, summarize, and persist official product updates for GitHub Copilot, GitHub Copilot CLI, GitHub Copilot app, OpenAI Codex, Claude Code, Cursor, and Google Antigravity CLI. Use for Japanese daily digests, weekly rollups with evidence-based community buzz, monthly rollups with promising-tool discovery, update-log duplicate checks, and source-registry audits. Do not use for general AI news or academic literature reviews.
+description: Track, verify, summarize, and persist official product updates and event announcements for GitHub Copilot, GitHub Copilot CLI, GitHub Copilot app, OpenAI Codex, Claude Code, Cursor, and Google Antigravity CLI. Use for Japanese daily digests, weekly rollups, monthly rollups with promising-tool discovery, update-log duplicate checks, and source-registry audits. Do not use for general AI news or academic literature reviews.
 ---
 
 # AIコーディングエージェント更新情報
@@ -13,7 +13,7 @@ description: Track, verify, summarize, and persist official product updates for 
 
 1. `references/official-sources.md`
 2. `references/output-templates.md`
-3. 週次のバズ判定または月次の新規ツール探索を行う場合は `references/buzz-and-discovery.md`
+3. 公式イベントの判定または月次の新規ツール探索を行う場合は `references/buzz-and-discovery.md`
 4. 対象期間に対応する `updates/daily/`、`updates/weekly/`、`updates/monthly/`
 
 更新候補の重複確認には `scripts/update_log.py` と `updates/update-log.jsonl` を使う。
@@ -21,7 +21,7 @@ description: Track, verify, summarize, and persist official product updates for 
 ## タスクを判定する
 
 - **daily**: 対象日の公式更新を確認し、ツール別に要約する
-- **weekly**: 対象週の日次レポートを統合し、コミュニティで注目された更新を抽出する
+- **weekly**: 対象週の日次レポートの製品更新と公式イベントをそれぞれ統合する
 - **monthly**: 対象月の週次レポートを統合し、対象外の有望ツールを探索する
 - **source-audit**: 公式情報源のURL、所有主体、更新状況、代替経路を再確認する
 
@@ -46,15 +46,15 @@ description: Track, verify, summarize, and persist official product updates for 
 
 1. 対象日と実行時刻をAsia/Tokyoで確定する。
 2. 自動実行で `collection/candidates.json` がある場合は、まず `references/collection.md` を読み、事前収集した候補とcoverageを使う。通常は `references/official-sources.md` のprimary sourceを全対象ツールについて確認する。
-3. 候補ごとに `update_log.py check` を実行する。
-4. 本文またはRelease本文を開き、タイトル、公開日、提供段階、変更内容、制約を確認する。
+3. 既存収集候補を製品更新と公式イベントに分類する。イベントの判定と記録は `references/buzz-and-discovery.md` に従う。
+4. 製品更新の候補ごとに `update_log.py check` を実行する。本文またはRelease本文を開き、タイトル、公開日、提供段階、変更内容、制約を確認する。ログの重複判定でイベントの記録を省略しない。
 5. 同一更新を統合し、重要度を付ける。
    - **high**: 破壊的変更、セキュリティ、価格・利用制限、GA、大きなワークフロー変更
    - **medium**: 新機能、対応範囲拡大、重要な性能・品質改善
    - **low**: 小規模修正、保守、利用者への影響が限定的な変更
 6. dailyテンプレートで `updates/daily/YYYY-MM-DD.md` を作る。
-7. 新規項目を `update_log.py add` で `updates/update-log.jsonl` に記録する。
-8. 更新がないツールも「更新なし」一覧に残す。確認できなかったツールは別に示す。
+7. 新規の製品更新を `update_log.py add` で `updates/update-log.jsonl` に記録する。イベントだけの告知は日次レポートに記録し、製品更新ログには追加しない。
+8. 更新がないツールも「更新なし」一覧に残す。確認できなかったツールは別に示し、イベントの確認不能も区別する。イベント候補を判定できない場合もcoverageを `partial` とする。
 
 ユーザーが「調査だけ」「プレビュー」と指定した場合はファイルを変更しない。それ以外のdaily作成依頼は、レポートとログの保存までを含む。
 
@@ -64,12 +64,9 @@ description: Track, verify, summarize, and persist official product updates for 
 2. 対象期間の `updates/daily/` を読み、存在する日と欠落日を列挙する。
 3. 日次項目を機能、モデル、エージェント実行、拡張性、セキュリティ、価格・制限、保守に整理する。
 4. 同一機能の段階的ロールアウトや連続パッチを1つの流れとして統合する。
-5. `references/buzz-and-discovery.md` に従い、対象週のコミュニティ反応を追加調査する。
-6. 根拠が十分なものだけ最大3件を「バズ」として掲載する。不十分なら「該当なし」とする。
-7. dailyの欠落や公式sourceの取得不能があれば、網羅性を `partial` とする。
-8. weeklyテンプレートで `updates/weekly/YYYY-Www.md` を作る。
-
-weeklyでは公式更新の事実とコミュニティ反応を混ぜない。反応数や投稿日は観測時点を併記する。
+5. 日次に記録された公式イベントを製品更新と別に統合し、同一イベントの告知と日程変更を1件にまとめる。
+6. dailyの欠落、イベント欄のない旧形式の日次、または日次のイベント欄に確認不能があれば、該当するイベントの網羅性を確認不能とし、coverageを `partial` とする。
+7. weeklyテンプレートで `updates/weekly/YYYY-Www.md` を作る。コミュニティ反応は収集しない。
 
 ## monthly
 
@@ -78,10 +75,11 @@ weeklyでは公式更新の事実とコミュニティ反応を混ぜない。�
 3. 対象月と重なる `updates/weekly/` を読み、欠落週を列挙する。
 4. 月内の日次項目に戻って件数を確認し、週境界をまたぐ項目の二重計上を避ける。
 5. 単なる週次要約の列挙ではなく、主要変化、継続トレンド、実務への影響を統合する。
-6. `references/buzz-and-discovery.md` に従って対象外ツールを探索する。
-7. 公式に存在と機能を確認でき、かつ有望性の根拠があるツールだけ最大5件を示す。
-8. 条件を満たす候補がなければ、必ず「対象外の有望ツール: なし」と書く。
-9. monthlyテンプレートで `updates/monthly/YYYY-MM.md` を作る。
+6. 日次・週次の公式イベントを製品更新と別に統合し、対象月の告知・変更だけを対象として週境界と同一イベントの重複を除く。欠落やイベント欄のない旧形式のレポート、イベント欄の確認不能を引き継いで示す。
+7. `references/buzz-and-discovery.md` に従い、既存の公式情報源に現れた対象外ツールを探索する。バズ調査はしない。
+8. 公式に存在と機能を確認でき、かつ有望性の根拠があるツールだけ最大5件を示す。
+9. 条件を満たす候補がなければ、確認できた範囲の結果として「対象外の有望ツール: なし」と書く。取得不能は別に記す。
+10. イベントの統合元に欠落、旧形式または確認不能があればcoverageを `partial` とし、monthlyテンプレートで `updates/monthly/YYYY-MM.md` を作る。
 
 対象外ツールを翌月から追跡対象へ自動追加しない。追加はユーザーの明示判断を待つ。
 
@@ -138,9 +136,9 @@ uv run python .agents/skills/ai-coding-agent-updates/scripts/update_log.py list 
 
 - 非公式記事を製品仕様の根拠にしない。
 - 投稿日が対象期間内という理由だけで、過去の更新を新着として扱わない。
-- 反応数を確認せず「バズった」と断定しない。
+- バズやコミュニティ反応を調査・収集しない。
 - 検索順位や検索結果件数を人気の証拠にしない。
 - previewやexperimentalをGAと表現しない。
-- 更新なし、バズなし、有望ツールなしを枠埋めしない。
+- 更新なし、イベントなし、有望ツールなしを枠埋めしない。
 - URL短縮サービスや転載ページをcanonical sourceにしない。
 - 公式ページの段落、コードブロック、コマンド一覧、長い箇条書きをコピーしない。
