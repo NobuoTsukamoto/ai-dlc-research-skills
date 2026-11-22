@@ -43,6 +43,7 @@ jobs:
 
       - name: Generate daily report
         run: |
+          rm -f collection/event-reconciliation.ok
           prompt="$(sed "s/{YYYY-MM-DD}/$TARGET_DATE/" prompts/daily-tool-updates.md)"
           python .github/scripts/run_copilot.py --mode daily -- copilot -p "$prompt" \
             --model="$COPILOT_MODEL" \
@@ -50,6 +51,10 @@ jobs:
             --allow-tool='write' \
             --allow-tool='web_fetch' \
             --allow-url="$COPILOT_ALLOWED_URLS"
+          test -f collection/event-reconciliation.ok || {
+            echo "Event candidate review or report backfill was not completed." >&2
+            exit 1
+          }
 
       - name: Preserve usage and collection evidence
         if: always()

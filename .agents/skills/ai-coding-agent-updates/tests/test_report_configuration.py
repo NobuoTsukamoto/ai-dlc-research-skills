@@ -63,6 +63,7 @@ class ReportConfigurationTests(unittest.TestCase):
                 self.assertIn("## 公式イベント", section)
                 self.assertIn("確認不能", section)
                 self.assertIn("網羅的ではない", section)
+                self.assertIn("発見日", section)
                 self.assertNotIn("## バズ", section)
                 self.assertNotIn("## 月間バズ", section)
 
@@ -71,6 +72,37 @@ class ReportConfigurationTests(unittest.TestCase):
             self.assertIn(requirement, rules)
         self.assertIn("イベント単独の告知は製品更新ログへ追加しない", rules)
         self.assertIn("旧形式でイベント欄がない", rules)
+
+    def test_late_events_are_backfilled_and_reconciled_before_state_acceptance(self) -> None:
+        references = ROOT / ".agents/skills/ai-coding-agent-updates/references"
+        rules = (references / "buzz-and-discovery.md").read_text(encoding="utf-8")
+        for requirement in (
+            "実際に確認した日",
+            "告知日・変更日で判定する",
+            "欠落している場合は作成せず",
+            "週次と暦月の月次が既にあれば",
+            "期間後の保存済み日次",
+            "重複追加しない",
+        ):
+            self.assertIn(requirement, rules)
+        daily = (ROOT / "prompts/daily-tool-updates.md").read_text(encoding="utf-8")
+        self.assertIn("collection/event-reconciliation.ok", daily)
+        for period in ("weekly", "monthly"):
+            prompt = (ROOT / "prompts" / f"{period}-tool-updates.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("後の保存済み日次", prompt)
+            self.assertIn("遅延発見を取り込む", prompt)
+        for workflow_name in ("daily.yml", "daily-dry-run.yml"):
+            workflow = (ROOT / ".github/workflows" / workflow_name).read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("rm -f collection/event-reconciliation.ok", workflow)
+            self.assertIn("test -f collection/event-reconciliation.ok", workflow)
+            self.assertLess(
+                workflow.index("rm -f collection/event-reconciliation.ok"),
+                workflow.index("test -f collection/event-reconciliation.ok"),
+            )
 
     def test_buzz_sources_are_not_added_to_automated_research(self) -> None:
         for workflow_name in REPORT_WORKFLOWS:
