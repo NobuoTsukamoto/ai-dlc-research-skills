@@ -22,7 +22,7 @@
 - GitHub Copilot、Copilot CLI、GitHub Copilot appの公式更新調査
 - Codex、Claude Code、Cursor、Antigravity CLIの公式更新調査
 - AIコーディングエージェント更新の日次・週次・月次まとめ
-- 週次のコミュニティ反応・バズ判定
+- 公式イベントの告知・日程変更の整理
 - 月次の対象外有望ツール探索
 - `updates/update-log.jsonl` の重複確認・更新
 

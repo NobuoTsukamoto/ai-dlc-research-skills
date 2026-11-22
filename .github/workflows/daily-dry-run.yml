@@ -101,6 +101,7 @@ jobs:
         if: inputs.live_fetch || github.event_name == 'pull_request'
         run: |
           set -o pipefail
+          rm -f collection/event-reconciliation.ok
           prompt="$(sed "s/{YYYY-MM-DD}/$TARGET_DATE/" prompts/daily-tool-updates.md)"
           python .github/scripts/run_copilot.py --mode dry-run -- copilot -p "$prompt" \
             --model="$COPILOT_MODEL" \
@@ -110,6 +111,10 @@ jobs:
             --allow-tool='web_fetch' \
             --allow-url="$COPILOT_ALLOWED_URLS" \
             | tee copilot-dry-run-output.txt
+          test -f collection/event-reconciliation.ok || {
+            echo "Event candidate review or report backfill was not completed." >&2
+            exit 1
+          }
 
       - name: Preserve usage and collection evidence
         if: always()

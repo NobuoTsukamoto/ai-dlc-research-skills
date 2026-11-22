@@ -43,6 +43,24 @@ class CollectionTests(unittest.TestCase):
         result, _ = self.collect(feed(extra=late), state)
         self.assertEqual(result['candidates'][0]['title'], 'Late')
 
+    def test_late_announcement_survives_month_and_week_boundary(self):
+        baseline = feed(published='Fri, 30 Oct 2026 00:00:00 GMT')
+        _, state = collector.collect(REGISTRY, {}, '2026-10-30', lambda _: baseline)
+        late = (
+            '<item><title>Event</title><link>https://cursor.com/event</link>'
+            '<pubDate>Sat, 31 Oct 2026 00:00:00 GMT</pubDate>'
+            '<description>Event announcement</description></item>'
+        )
+        result, new_state = collector.collect(
+            REGISTRY, state, '2026-11-02', lambda _: feed(
+                published='Fri, 30 Oct 2026 00:00:00 GMT', extra=late
+            )
+        )
+        self.assertEqual(len(result['candidates']), 1)
+        self.assertEqual(result['candidates'][0]['published'], '2026-10-31')
+        self.assertEqual(result['candidates'][0]['reason'], 'new-or-unseen')
+        self.assertNotEqual(new_state, state)
+
     def test_future_entry_not_acknowledged(self):
         result, state = self.collect(feed(published='Fri, 30 Oct 2026 00:00:00 GMT'))
         self.assertEqual(result['candidates'], [])
