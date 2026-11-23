@@ -11,14 +11,8 @@ permissions:
 
 jobs:
   validate:
-    name: Validate (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
+    name: Validate
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
@@ -41,3 +35,6 @@ jobs:
 
       - name: Run coding-agent update tests
         run: uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
+
+      - name: Run collection and usage tests
+        run: uv run python -m unittest discover -s .github/tests -p "test_*.py"

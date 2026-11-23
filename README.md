@@ -5,7 +5,8 @@ AI-DLCの論文調査と、AIコーディングエージェントの公式アッ
 ## スキル
 
 - `ai-dlc-research`: 論文・産業調査の探索、評価、精読、月次統合
-- `ai-coding-agent-updates`: GitHub Copilot、Copilot CLI/app、Codex、Claude Code、Cursor、Antigravity CLIの公式更新を日次・週次・月次で整理
+- `ai-coding-agent-updates`: GitHub Copilot、Copilot CLI/app、Codex、Claude Code、Cursor、Antigravity CLI、AWS Kiroの公式更新を日次・週次・月次で整理
+- `japanese-tech-writing`: 日本語の技術文書の執筆・推敲規範（[k16shikanoのpublic Gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)、Unlicense）
 
 ## 構成
 
@@ -18,7 +19,8 @@ AI-DLCの論文調査と、AIコーディングエージェントの公式アッ
 │   └── workflows/ci.yml
 ├── .agents/skills/
 │   ├── ai-dlc-research/
-│   └── ai-coding-agent-updates/
+│   ├── ai-coding-agent-updates/
+│   └── japanese-tech-writing/
 ├── research/
 │   ├── research-policy.md
 │   └── reading-log.md
@@ -58,6 +60,7 @@ uv run .agents/skills/ai-dlc-research/scripts/validate_skill.py
 # 付属テストの実行
 uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "test_*.py"
 uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
+uv run python -m unittest discover -s .github/tests -p "test_*.py"
 
 # 読書ログの重複確認
 uv run python .agents/skills/ai-dlc-research/scripts/reading_log.py check --log research/reading-log.md --title "Paper title" --doi "10.xxxx/xxxxx"
@@ -88,7 +91,8 @@ uv run python -m unittest discover -s .agents/skills/ai-dlc-research/tests -p "t
 uv run python -m unittest discover -s .agents/skills/ai-coding-agent-updates/tests -p "test_*.py"
 ```
 
-GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行します。
+GitHub Actionsでも、Ubuntu上で同じ検証を実行します（Windows固有の機能は使用していないため、
+CIは`ubuntu-latest`のみで実行します）。
 
 ## 自動更新
 
@@ -97,8 +101,33 @@ GitHub Actionsでも、UbuntuとWindowsの両方で同じ検証を実行しま�
 更新ログのコマンド例を実行する場合は、先に `git switch data` で `data` ブランチを
 チェックアウトしてください。各ワークフローはUTC 00:00（JST 09:00）を基準に実行され、
 `workflow_dispatch` でも起動できます。
+`data` の生成物は毎週、週次ワークフローの成功後に更新担当者が確認し、`main` 向けPRで
+レビュー・取り込みます。緊急性の高い公式イベント日程変更や、`main` 上の重要な誤りは
+週次を待たずに臨時PRで取り込みます。マージ後は `main` を `data` にマージしてpushし、
+次回の差分を取り込み済み内容から分離します。確認項目と手順は [`docs/usage.md`](docs/usage.md#data-から-main-への週次取り込み) を参照してください。
+既定モデルは日次・週次・月次・dry-runとも `gpt-6-luna` です。Repository variable `COPILOT_MODEL` を設定すると、日次・週次・月次のモデルを上書きできます。既存変数がある場合は既定値より優先されるため、運用切り替え時に変数も確認してください。dry-runは比較用に既定モデルを固定しています。
 `data` への生成物pushはCIの対象外です。Copilot CLI、ログ検証、pushのいずれかが
 失敗した場合、GitHub Actionsの実行は失敗として表示されます。
+
+各実行のCLI出力と利用統計は `copilot-usage-<mode>-<run_id>-<attempt>` Artifactに30日間保存します。失敗した実行も対象です。`usage/run.json` に処理区分、要求モデル、実行ID、再実行番号、終了状態を記録し、取得できたOpenTelemetryの呼び出し別統計から実際のモデルとトークン数を集計します。CLIが明示したAIクレジット値だけを記録し、取得できない値は `null` にします。CLIの統計表示と `usage/otel.jsonl` が元の証跡です。モデルやトークン数から請求額を推計して埋めることはしません。キャンセル等で終了処理に到達しなかった場合、開始時の状態が残ることがあります。
+
+日次とdry-runでは、LLM起動前に `.github/scripts/collect_updates.py` がレジストリの全primary sourceを取得します。RSS・Atomの日付をJSTへ変換し、保存済み本文ハッシュと既存ログのURLで候補を絞ります。`collection/candidates.json` に変更候補と全ソースの取得結果を記録し、LLMは必要な本文確認と取得失敗の補完を行います。取得不能を「更新なし」と扱いません。
+
+収集状態は日次レポートとログの検証成功後、`updates/collection-state.json` としてdataブランチへ保存します。次回以降は古い公開日の新規出現や本文修正も候補になります。初回より前の修正やfeedから消えた記事は検出を保証できないため、初回や長期停止後は公式ページで補完します。週次・月次は保存済みレポートの統合と追加調査を維持します。
+
+利用統計の仕様は [Copilot CLI公式リファレンス](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference) を参照してください。CLIのバージョンによって統計項目が異なる場合は、Artifactの原文を確認します。
+
+`.github/workflows/daily-dry-run.yml` は日次更新の手動dry-runに加え、同一リポジトリ内のPRでも
+自動実行します（forkからのPRは対象外）。PR実行と手動実行の`live_fetch=true`はCopilotへの
+リクエストを伴うため、AI Creditsを消費します。既定の`live_fetch=false`はCopilotへの
+リクエストを送らず、固定したCLIバージョン、モデル、URL許可設定だけを検証します。
+実行では対象日と同じ`data`ブランチのレポートがあれば差分を作り、基準レポート、生成レポート、
+差分、決定的な検証結果を7日間のArtifactに保存します。差分は人が確認するための情報であり、
+テキストの違いだけではPRチェックは失敗しません。同じ対象日の基準レポートがない場合も、
+比較できないことをArtifactに記録し、PRチェックは失敗させません。レポートや更新ログの検証失敗は
+引き続きチェックを失敗させます。`data`ブランチへのcommitやpushは行いません。2026-06-01以降の
+[usage-based billing](https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing)
+では0円の選択可能モデルはないため、実フェッチ確認ではAI Creditsを消費します。
 
 ## 注意
 

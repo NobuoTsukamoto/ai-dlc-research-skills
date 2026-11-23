@@ -108,6 +108,10 @@ class UpdateLogTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(output.strip(), "NOT_FOUND")
 
+    def test_aws_kiro_is_supported_by_update_log(self):
+        self.assertEqual(self.add(tool="aws-kiro"), 0)
+        self.assertEqual(update_log.load_log(self.log)[0]["tool"], "aws-kiro")
+
     def test_distinct_titles_with_common_prefix_are_not_duplicates(self):
         self.add(title="Release 1.2.3 fixes Windows", url="https://example.com/1.2.3")
         exit_code, output = self.check(
